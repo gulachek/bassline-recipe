@@ -1,0 +1,12 @@
+@use './page.scss';
+
+.directions {
+	ol {
+		list-style-type: none;
+		padding: 0;
+	}
+
+	li {
+		padding: 0.5em;
+	}
+}

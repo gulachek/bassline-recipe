@@ -1,0 +1,15 @@
+.main {
+	max-width: 8in;
+	margin: auto;
+}
+
+.section-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.section {
+	border: solid 1px;
+	margin: 1em;
+	padding: 1em;
+}
