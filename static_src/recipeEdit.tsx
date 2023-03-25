@@ -494,6 +494,8 @@ interface IPageModel
 {
 	recipe: IRecipe;
 	courses: string[]; // array of titles
+	saveUri: string;
+	viewUri: string;
 }
 
 function Page(props: IPageModel)
@@ -537,7 +539,7 @@ function Page(props: IPageModel)
 
 		const request = { recipe: structuredClone(recipe) };
 
-		const response = await postJson<SaveResponse>('./save', { body: request });
+		const response = await postJson<SaveResponse>(props.saveUri, { body: request });
 
 		dispatch({ type: 'endSave', response, request });
 	}, [recipe]);
@@ -554,6 +556,7 @@ function Page(props: IPageModel)
 					</div>
 
 					<div className="section-container">
+						<RecipeStatus recipe={recipe} viewUri={props.viewUri} />
 						<RecipeProperties recipe={recipe} courses={props.courses} />
 						<EditArraySection
 							title="Ingredients"
@@ -580,7 +583,7 @@ interface IRecipePropertiesProps
 
 function RecipeProperties(props: IRecipePropertiesProps)
 {
-	const { title, isVegan, isPublished, course, courtesyOf } = props.recipe;
+	const { title, isVegan, course, courtesyOf } = props.recipe;
 	const { courses } = props;
 
 	const setTitle = useSetProp('title');
@@ -596,11 +599,6 @@ function RecipeProperties(props: IRecipePropertiesProps)
 	const setIsVegan = useSetProp('isVegan');
 	const onChangeIsVegan = useInputCallback((e) => {
 		setIsVegan(e.target.checked);
-	}, []);
-
-	const setIsPublished = useSetProp('isPublished');
-	const onChangeIsPublished = useInputCallback((e) => {
-		setIsPublished(e.target.checked);
 	}, []);
 
 	const courseOptions = [];
@@ -643,13 +641,47 @@ function RecipeProperties(props: IRecipePropertiesProps)
 				/> Is Vegan
 			</label>
 		</div>
-		<div>
-			<label> <input type="checkbox"
-				checked={isPublished}
-				onChange={onChangeIsPublished}
-				/> Is Published
+	</Section>;
+}
+
+interface IRecipeStatusProps
+{
+	recipe: IEditableRecipe;
+	viewUri: string;
+}
+
+function RecipeStatus(props: IRecipeStatusProps)
+{
+	const { recipe, viewUri } = props;
+	const { isPublished } = recipe;
+
+	const setIsPublished = useSetProp('isPublished');
+	const onChangeIsPublished = useInputCallback((e) => {
+		setIsPublished(!!parseInt(e.target.value));
+	}, []);
+
+	return <Section title="Status">
+		<p><a href={viewUri}> View Recipe </a></p>
+
+		<fieldset className="visibility">
+			<legend> Visibility </legend>
+			<label>
+				<input type="radio"
+					name="is_published"
+					value="1"
+					checked={isPublished}
+					onChange={onChangeIsPublished}
+					/> Published
 			</label>
-		</div>
+			<label>
+				<input type="radio"
+					name="is_published"
+					value="0"
+					checked={!isPublished}
+					onChange={onChangeIsPublished}
+					/> Private
+			</label>
+		</fieldset>
 	</Section>;
 }
 

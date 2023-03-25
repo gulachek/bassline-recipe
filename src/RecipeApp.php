@@ -97,6 +97,17 @@ class RecipeApp extends App
 		return $arg->uid() === $recipe['owner_uid'];
 	}
 
+	private function canViewRecipe(
+		RespondArg $arg,
+		array $recipe
+	): bool
+	{
+		if ($this->canEditRecipe($arg, $recipe))
+			return true;
+
+		return !!$recipe['is_published'];
+	}
+
 	public function respond(RespondArg $arg): mixed
 	{
 		return $arg->route([
@@ -105,7 +116,8 @@ class RecipeApp extends App
 			'create' => $this->handler('create'),
 			'edit' => $this->handler('edit'),
 			'save' => $this->handler('save'),
-			'view' => $this->handler('view')
+			'view' => $this->handler('view'),
+			'publish' => $this->handler('publish')
 		]);
 	}
 
@@ -140,10 +152,29 @@ class RecipeApp extends App
 			model: [
 				'recipe' => $recipe,
 				'courses' => self::COURSES,
-				'saveUri' => "/{$this->baseUri}/save"
+				'saveUri' => "/{$this->baseUri}/save",
+				'viewUri' => "/{$this->baseUri}/view?id=$id"
 			]
 		);
 		return null;
+	}
+
+	public function publish(RespondArg $arg): mixed
+	{
+		$id = \intval($_REQUEST['id']);
+
+		$recipe = $this->db->loadRecipe($id);
+
+		if (!$recipe)
+			return new Error(404, 'Recipe not found');
+
+		if (!$this->canEditRecipe($arg, $recipe))
+			return new Error(401, 'Not authorized');
+
+		$recipe['is_published'] = !!\intval($_REQUEST['publish']);
+		$this->db->saveRecipe($recipe);
+
+		return new Redirect("/{$this->baseUri}/view?id=$id");
 	}
 
 	public function save(RespondArg $arg): mixed
@@ -315,7 +346,7 @@ class RecipeApp extends App
 		$id = \intval($_REQUEST['id']);
 
 		$recipe = $this->db->loadRecipe($id);
-		if (!$recipe)
+		if (!($recipe && $this->canViewRecipe($arg, $recipe)))
 			return new Error(404, 'Not found');
 
 		$can_edit = $this->canEditRecipe($arg, $recipe);
