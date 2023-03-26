@@ -117,7 +117,8 @@ class RecipeApp extends App
 			'edit' => $this->handler('edit'),
 			'save' => $this->handler('save'),
 			'view' => $this->handler('view'),
-			'publish' => $this->handler('publish')
+			'publish' => $this->handler('publish'),
+			'delete' => $this->handler('delete')
 		]);
 	}
 
@@ -153,7 +154,8 @@ class RecipeApp extends App
 				'recipe' => $recipe,
 				'courses' => self::COURSES,
 				'saveUri' => "/{$this->baseUri}/save",
-				'viewUri' => "/{$this->baseUri}/view?id=$id"
+				'viewUri' => "/{$this->baseUri}/view?id=$id",
+				'deleteUri' => "/{$this->baseUri}/delete"
 			]
 		);
 		return null;
@@ -175,6 +177,23 @@ class RecipeApp extends App
 		$this->db->saveRecipe($recipe);
 
 		return new Redirect("/{$this->baseUri}/view?id=$id");
+	}
+
+	public function delete(RespondArg $arg): mixed
+	{
+		$id = \intval($_REQUEST['id']);
+
+		$recipe = $this->db->loadRecipe($id);
+
+		if (!$recipe)
+			return new Error(404, 'Recipe not found');
+
+		if (!$this->canEditRecipe($arg, $recipe))
+			return new Error(401, 'Not authorized');
+
+		$this->db->deleteRecipe($id);
+
+		return new Redirect("/{$this->baseUri}/my_recipes");
 	}
 
 	public function save(RespondArg $arg): mixed

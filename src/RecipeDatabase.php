@@ -40,6 +40,15 @@ class RecipeDatabase
 		return $id;
 	}
 
+	public function deleteRecipe(
+		int $recipe_id
+	): void
+	{
+		$this->db->query('delete-recipe', $recipe_id);
+		$this->db->query('delete-ingredients', $recipe_id);
+		$this->db->query('delete-directions', $recipe_id);
+	}
+
 	public function loadRecipe(
 		int $id
 	): ?array

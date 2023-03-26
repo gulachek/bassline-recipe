@@ -6,6 +6,7 @@ import {
 	useCallback,
 	useRef,
 	useState,
+	useEffect,
 	ChangeEvent,
 	MouseEvent,
 	KeyboardEvent,
@@ -114,6 +115,7 @@ interface IEditState
 	savedRecipe: IEditableRecipe;
 	isSaving: boolean;
 	tempIdCounter: number;
+	showDeleteDialog: boolean;
 }
 
 interface ISetPropAction<PropKey extends keyof IEditableRecipe>
@@ -253,6 +255,20 @@ interface IEndSaveAction
 	request: ISaveRequest;
 }
 
+interface IShowDialogAction
+{
+	type: 'showDialog';
+	show: boolean;
+}
+
+function useShowDialog()
+{
+	const dispatch = useDispatch();
+	return (show: boolean) => {
+		dispatch({ type: 'showDialog', show });
+	};
+}
+
 type EditAction =
 	ISetElemValueAction
 	| IAddElemAction
@@ -261,12 +277,13 @@ type EditAction =
 	| IMoveElemAction
 	| IBeginSaveAction
 	| IEndSaveAction
+	| IShowDialogAction
 	| SetPropActions[keyof IEditableRecipe]
 ;
 
 function reducer(state: IEditState, action: EditAction): IEditState
 {
-	let { isSaving, savedRecipe, tempIdCounter } = state;
+	let { isSaving, savedRecipe, tempIdCounter, showDeleteDialog } = state;
 
 	const recipe = {...state.recipe};
 
@@ -386,11 +403,16 @@ function reducer(state: IEditState, action: EditAction): IEditState
 			savedRecipe = reqRec;
 		}
 	}
+	else if (action.type === 'showDialog')
+	{
+		showDeleteDialog = action.show;
+	}
 
 	return { 
 		tempIdCounter,
 		isSaving,
 		savedRecipe,
+		showDeleteDialog,
 		recipe
 	};
 }
@@ -496,6 +518,7 @@ interface IPageModel
 	courses: string[]; // array of titles
 	saveUri: string;
 	viewUri: string;
+	deleteUri: string;
 }
 
 function Page(props: IPageModel)
@@ -524,7 +547,8 @@ function Page(props: IPageModel)
 		recipe: initRecipe,
 		savedRecipe: structuredClone(initRecipe),
 		isSaving: false,
-		tempIdCounter: -1
+		tempIdCounter: -1,
+		showDeleteDialog: false
 	};
 
 	const [state, dispatch] = useReducer(reducer, initialState);
@@ -546,6 +570,11 @@ function Page(props: IPageModel)
 
 	return <div>
 			<RecipeDispatchContext.Provider value={dispatch}>
+				<DeleteDialog
+					open={state.showDeleteDialog}
+					deleteUri={props.deleteUri}
+					recipeId={recipe.id}
+				/>
 				<AutoSaveForm onSave={onSave} hasChange={hasChange}>
 					<div className="header">
 						<h1> Edit recipe </h1>
@@ -660,8 +689,16 @@ function RecipeStatus(props: IRecipeStatusProps)
 		setIsPublished(!!parseInt(e.target.value));
 	}, []);
 
+	const showDialog = useShowDialog();
+	const clickDelete = useCallback(() => {
+		showDialog(true);
+	}, []);
+
 	return <Section title="Status">
-		<p><a href={viewUri}> View Recipe </a></p>
+		<p>
+			<a href={viewUri}> View Recipe </a>
+			<button onClick={clickDelete}> Delete Recipe </button>
+		</p>
 
 		<fieldset className="visibility">
 			<legend> Visibility </legend>
@@ -839,6 +876,38 @@ function EditArraySection(props: IEditArraySectionProps)
 	</Section>;
 }
 
+interface IDeleteDialogProps
+{
+	open: boolean;
+	recipeId: number;
+	deleteUri: string;
+}
+
+function DeleteDialog(props: IDeleteDialogProps)
+{
+	const { open, deleteUri, recipeId } = props;
+	const showDialog = useShowDialog();
+
+	const clickCancel = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+			e.preventDefault();
+			showDialog(false);
+	}, []);
+
+	return <ModalDialog open={open}>
+		<form method="POST" action={deleteUri}>
+			<input type="hidden" name="id" value={recipeId} />
+			<h2> Delete Recipe </h2>
+			<p>
+				Are you sure you want to delete this recipe? This is a <strong> permanent </strong> action that cannot be undone.
+			</p>
+			<p>
+				<button> Delete </button>
+				<button onClick={clickCancel}> Cancel </button>
+			</p>
+		</form>
+	</ModalDialog>;
+}
+
 interface ISectionProps
 {
 	title: string;
@@ -850,6 +919,41 @@ function Section(props: React.PropsWithChildren<ISectionProps>)
 		<h3> {props.title} </h3>
 		{props.children}
 	</section>;
+}
+
+interface IModalDialogProps
+{
+	open: boolean;
+}
+
+function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>)
+{
+	const { open, children } = props;
+
+	const ref = useRef<HTMLDialogElement>(null);
+
+	type CloseListener = (this: HTMLDialogElement, ev: Event) => any;
+	const listener = useRef<CloseListener>(null);
+
+	const showDialog = useShowDialog();
+
+	useEffect(() => {
+		if (listener.current)
+			ref.current.removeEventListener('close', listener.current);
+
+		listener.current = (e: Event) => { showDialog(false); };
+		ref.current.addEventListener('close', listener.current);
+
+		if (open)
+			ref.current.showModal();
+		else
+			ref.current.close();
+
+	}, [open]);
+
+	return <dialog ref={ref}>
+		{children}
+	</dialog>;
 }
 
 renderReactPage<IPageModel>(model => <Page {...model} />);
