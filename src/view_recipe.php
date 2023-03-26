@@ -18,7 +18,9 @@ This is a preview of a draft. Only those who can edit this recipe will be able t
 
 	<ul>
 		<?php foreach ($r['ingredients'] as $ing): ?>
-			<li> <?=text($ing['value'])?> </li>
+			<?php if ($ing['value']): ?>
+				<li> <?=text($ing['value'])?> </li>
+			<?php endif; ?>
 		<?php endforeach; ?>
 	</ul>
 </div>
@@ -28,7 +30,9 @@ This is a preview of a draft. Only those who can edit this recipe will be able t
 
 	<ol>
 		<?php foreach ($r['directions'] as $dir): ?>
-			<li> <?=text($dir['value'])?> </li>
+			<?php if ($dir['value']): ?>
+				<li> <?=text($dir['value'])?> </li>
+			<?php endif; ?>
 		<?php endforeach; ?>
 	</ol>
 </div>

@@ -1,10 +1,12 @@
 <link rel="stylesheet" type="text/css" href="<?=$URI->abs('/assets/recipe_page.css')?>" />
 
-<h1> Recipes </h1>
-
 <p>
 <a href="<?=$URI->abs('/my_recipes')?>"> My Recipes </a>
 </p>
+
+<hr />
+
+<h1> Recipes </h1>
 
 <?php if (count($TEMPLATE['recipes']) < 1): ?>
 	<div>

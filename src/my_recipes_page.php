@@ -2,17 +2,25 @@
 
 <?php if ($TEMPLATE['can_create']): ?>
 
-<?php foreach ($TEMPLATE['recipes'] as $recipe): ?>
-<div>
-	<a href="<?=$URI->abs('/edit', ['id' => $recipe['id']])?>">
-		<?=text($recipe['title'])?>
-	</a>
-</div>
-<?php endforeach; ?>
+<?php if (count($TEMPLATE['recipes'])): ?>
 
-<form method="POST" action="<?=$URI->abs('/create')?>">
-<button> Create New </button>
-</form>
+	<h2> Select a recipe to edit </h2>
+
+	<?php foreach ($TEMPLATE['recipes'] as $recipe): ?>
+	<div>
+		<a href="<?=$URI->abs('/edit', ['id' => $recipe['id']])?>">
+			<?=text($recipe['title'])?>
+		</a>
+	</div>
+	<?php endforeach; ?>
+
+<?php endif; ?>
+
+<p>
+	<form method="POST" action="<?=$URI->abs('/create')?>">
+	<button> Create New Recipe </button>
+	</form>
+</p>
 
 <?php elseif ($TEMPLATE['is_logged_in']): ?>
 
