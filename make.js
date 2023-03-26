@@ -14,7 +14,8 @@ const main = new Target(sys);
 
 const styles = [
 	'recipe_page',
-	'view_recipe'
+	'view_recipe',
+	'my_recipes',
 ];
 
 for (const style of styles)

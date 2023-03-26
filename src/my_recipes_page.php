@@ -1,15 +1,19 @@
 <h1> My Recipes </h1>
 
+<link type="text/css" rel="stylesheet"
+	href="<?=$URI->abs('/assets/my_recipes.css')?>" />
+
 <?php if ($TEMPLATE['can_create']): ?>
 
 <?php if (count($TEMPLATE['recipes'])): ?>
 
-	<h2> Select a recipe to edit </h2>
+	<p> <em> Select a recipe to edit </em> </p>
 
 	<?php foreach ($TEMPLATE['recipes'] as $recipe): ?>
 	<div>
 		<a href="<?=$URI->abs('/edit', ['id' => $recipe['id']])?>">
 			<?=text($recipe['title'])?>
+			<?php if (!$recipe['is_published']) echo '(draft)'; ?>
 		</a>
 	</div>
 	<?php endforeach; ?>
