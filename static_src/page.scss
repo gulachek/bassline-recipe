@@ -1,2 +1,7 @@
-.main {
+.warning-box {
+	background-color: var(--system-theme-warning);
+	color: var(--system-theme-warning-text);
+	border: solid thin;
+	padding: 1em;
+	margin: 1em 0;
 }

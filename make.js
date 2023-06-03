@@ -21,6 +21,7 @@ const styles = [
 for (const style of styles)
 {
 	const target = new ScssTarget(sys, `static_src/${style}.scss`);
+	target.dependsOn('static_src/page.scss');
 	main.dependsOn(target);
 }
 

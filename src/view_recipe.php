@@ -2,9 +2,28 @@
 <link rel="stylesheet" type="text/css" href="<?=$URI->abs('/assets/view_recipe.css')?>" />
 
 <?php if (!$r['is_published']): ?>
-<p><em>
+<div class="warning-box">
 This is a preview of a draft. Only those who can edit this recipe will be able to access this preview.  To make the recipe visible to anyone, publish it.
-</em></p>
+</div>
+<?php endif; ?>
+
+<?php if ($TEMPLATE['can_edit']): ?>
+<form class="actions">
+	<input type="hidden" name="id" value="<?=$r['id']?>" />
+
+	<button formmethod="GET" formaction="<?=$URI->abs('/edit')?>">
+		Edit Recipe
+	</button>
+
+	<button
+		formmethod="POST"
+		formaction="<?=$URI->abs('/publish')?>"
+		name="publish"
+		value="<?=\intval(!$r['is_published'])?>"
+	>
+		<?=$r['is_published'] ? 'Hide' : 'Publish'?> Recipe
+	</button>
+</form>
 <?php endif; ?>
 
 <h1> <?=text($r['title'])?> </h1>
@@ -43,23 +62,3 @@ This is a preview of a draft. Only those who can edit this recipe will be able t
 	<p> <em> <?=text($r['notes'])?> </em> </p>
 </div>
 <?php endif; ?>
-
-<?php if ($TEMPLATE['can_edit']): ?>
-<form class="actions">
-	<input type="hidden" name="id" value="<?=$r['id']?>" />
-
-	<button formmethod="GET" formaction="<?=$URI->abs('/edit')?>">
-		Edit Recipe
-	</button>
-
-	<button
-		formmethod="POST"
-		formaction="<?=$URI->abs('/publish')?>"
-		name="publish"
-		value="<?=\intval(!$r['is_published'])?>"
-	>
-		<?=$r['is_published'] ? 'Hide' : 'Publish'?> Recipe
-	</button>
-</form>
-<?php endif; ?>
-
