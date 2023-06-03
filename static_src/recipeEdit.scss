@@ -30,8 +30,8 @@ loading-overlay {
 .footer {
 	position: sticky;
 	bottom: 0;
-	color: var(--theme-page-fg);
-	background-color: var(--theme-page-bg);
+	color: var(--system-theme-canvas-text);
+	background-color: var(--system-theme-canvas);
 	border: solid 1px;
 	margin: 1em;
 }
