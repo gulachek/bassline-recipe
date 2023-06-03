@@ -1,10 +1,8 @@
 <link rel="stylesheet" type="text/css" href="<?=$URI->abs('/assets/recipe_page.css')?>" />
 
-<p>
+<div class="my-recipes">
 <a href="<?=$URI->abs('/my_recipes')?>"> My Recipes </a>
-</p>
-
-<hr />
+</div>
 
 <h1> Recipes </h1>
 

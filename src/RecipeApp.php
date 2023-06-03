@@ -332,15 +332,15 @@ class RecipeApp extends App
 			$recipes = $this->db->loadMyRecipes($arg->uid());
 		}
 
-		$arg->renderPage([
-			'title' => 'My Recipes',
-			'template' => __DIR__ . '/my_recipes_page.php',
-			'args' => [
+		$arg->renderPage(
+			title: 'My Recipes',
+			template: __DIR__ . '/my_recipes_page.php',
+			args: [
 				'is_logged_in' => $arg->isLoggedIn(),
 				'can_create' => $can_create,
 				'recipes' => $recipes
 			]
-		]);
+		);
 
 		return null;
 	}
@@ -349,13 +349,13 @@ class RecipeApp extends App
 	{
 		$recipes = $this->db->loadPublishedRecipes();
 
-		$arg->renderPage([
-			'title' => 'Recipes',
-			'template' => __DIR__ . '/recipe_page.php',
-			'args' => [
+		$arg->renderPage(
+			title: 'Recipes',
+			template: __DIR__ . '/recipe_page.php',
+			args: [
 				'recipes' => $recipes
 			]
-		]);
+		);
 
 		return null;
 	}
@@ -370,14 +370,14 @@ class RecipeApp extends App
 
 		$can_edit = $this->canEditRecipe($arg, $recipe);
 
-		$arg->renderPage([
-			'title' => $recipe['title'],
-			'template' => __DIR__ . '/view_recipe.php',
-			'args' => [
+		$arg->renderPage(
+			title: $recipe['title'],
+			template: __DIR__ . '/view_recipe.php',
+			args: [
 				'recipe' => $recipe,
 				'can_edit' => $can_edit
 			]
-		]);
+		);
 		return null;
 	}
 }

@@ -568,40 +568,41 @@ function Page(props: IPageModel)
 		dispatch({ type: 'endSave', response, request });
 	}, [recipe]);
 
-	return <div>
+	return <React.Fragment>
 			<RecipeDispatchContext.Provider value={dispatch}>
+				<AutoSaveForm onSave={onSave} hasChange={hasChange} />
 				<DeleteDialog
 					open={state.showDeleteDialog}
 					deleteUri={props.deleteUri}
 					recipeId={recipe.id}
 				/>
-				<AutoSaveForm onSave={onSave} hasChange={hasChange}>
-					<div className="header">
-						<h1> Edit recipe </h1>
-						<p className="save-indicator">
-						<input type="checkbox" readOnly checked={!hasChange} /> 
-						Saved
-						</p>
-					</div>
+				<div className="header">
+					<h1> Edit recipe </h1>
+				</div>
 
-					<div className="section-container">
-						<RecipeStatus recipe={recipe} viewUri={props.viewUri} />
-						<RecipeProperties recipe={recipe} courses={props.courses} />
-						<EditArraySection
-							title="Ingredients"
-							propKey="ingredients"
-							array={recipe.ingredients} />
+				<div className="section-container">
+					<RecipeStatus recipe={recipe} viewUri={props.viewUri} />
+					<RecipeProperties recipe={recipe} courses={props.courses} />
+					<EditArraySection
+						title="Ingredients"
+						propKey="ingredients"
+						array={recipe.ingredients} />
 
-						<EditArraySection
-							title="Directions"
-							propKey="directions"
-							array={recipe.directions} />
+					<EditArraySection
+						title="Directions"
+						propKey="directions"
+						array={recipe.directions} />
 
-						<Notes notes={recipe.notes} />
-					</div>
-				</AutoSaveForm>
+					<Notes notes={recipe.notes} />
+				</div>
+				<div className="footer">
+					<p className="save-indicator">
+					<input type="checkbox" readOnly checked={!hasChange} /> 
+					Saved
+					</p>
+				</div>
 			</RecipeDispatchContext.Provider>
-		</div>;
+		</React.Fragment>;
 }
 
 interface IRecipePropertiesProps

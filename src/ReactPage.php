@@ -11,17 +11,15 @@ class ReactPage
 		string $title,
 		array $scripts,
 		array $model
-	): void
+	): mixed
 	{
-		$renderPageArgs = [
-			'title' => $title,
-			'template' => __DIR__ . '/react_page.php',
-			'args' => [
+		return $arg->renderPage(
+			title: $title,
+			template: __DIR__ . '/react_page.php',
+			args: [
 				'model' => $model,
 				'scripts' => $scripts
 			]
-		];
-
-		$arg->renderPage($renderPageArgs);
+		);
 	}
 }
