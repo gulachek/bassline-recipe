@@ -155,7 +155,8 @@ class RecipeApp extends App
 				'courses' => self::COURSES,
 				'saveUri' => "/{$this->baseUri}/save",
 				'viewUri' => "/{$this->baseUri}/view?id=$id",
-				'deleteUri' => "/{$this->baseUri}/delete"
+				'deleteUri' => "/{$this->baseUri}/delete",
+				'publishUri' => "/{$this->baseUri}/publish",
 			]
 		);
 		return null;

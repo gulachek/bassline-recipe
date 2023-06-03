@@ -5,6 +5,7 @@ import {
 	useContext,
 	useCallback,
 	useRef,
+	useId,
 	useState,
 	useEffect,
 	ChangeEvent,
@@ -16,6 +17,12 @@ import {
 import { renderReactPage } from './renderReactPage';
 import { postJson } from './postJson';
 import { AutoSaveForm } from './autosave/AutoSaveForm';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+	faPlus,
+	faMinus,
+	faTriangleExclamation
+} from '@fortawesome/free-solid-svg-icons'
 
 import './recipeEdit.scss';
 
@@ -519,6 +526,7 @@ interface IPageModel
 	saveUri: string;
 	viewUri: string;
 	deleteUri: string;
+	publishUri: string;
 }
 
 function Page(props: IPageModel)
@@ -581,25 +589,32 @@ function Page(props: IPageModel)
 				</div>
 
 				<div className="section-container">
-					<RecipeStatus recipe={recipe} viewUri={props.viewUri} />
+					<RecipeActions
+						isPublished={!!props.recipe.is_published}
+						publishUri={props.publishUri}
+						recipeId={props.recipe.id}
+					/>
+					<hr />
 					<RecipeProperties recipe={recipe} courses={props.courses} />
+					<hr />
 					<EditArraySection
 						title="Ingredients"
 						propKey="ingredients"
 						array={recipe.ingredients} />
+
+					<hr />
 
 					<EditArraySection
 						title="Directions"
 						propKey="directions"
 						array={recipe.directions} />
 
+					<hr />
+
 					<Notes notes={recipe.notes} />
 				</div>
 				<div className="footer">
-					<p className="save-indicator">
-					<input type="checkbox" readOnly checked={!hasChange} /> 
-					Saved
-					</p>
+					<RecipeStatus recipe={recipe} viewUri={props.viewUri} hasChange={hasChange} />
 				</div>
 			</RecipeDispatchContext.Provider>
 		</React.Fragment>;
@@ -645,82 +660,85 @@ function RecipeProperties(props: IRecipePropertiesProps)
 		setCourse(parseInt(e.target.value));
 	}, []);
 
-	return <Section title="Recipe">
-		<div>
-			<label> Title: <input type="text"
+	const titleId = useId();
+	const courseId = useId();
+	const courtesyOfId = useId();
+	const isVeganId = useId();
+
+	return <Section>
+		<div className="recipe-props">
+			<label htmlFor={titleId}> Title: </label>
+			<input id={titleId} type="text"
 				value={title}
 				onChange={onChangeTitle}
-				/>
-			</label>
-			<label> Course:
-				<select onChange={onChangeCourse} value={course}>
-					{courseOptions}
-				</select>
-			</label>
-			<label> Courtesy of: <input type="text"
+			/>
+			<label htmlFor={courseId}> Course: </label>
+			<select id={courseId} onChange={onChangeCourse} value={course}>
+				{courseOptions}
+			</select>
+			<label htmlFor={courtesyOfId}> Courtesy of: </label>
+			<input type="text"
+				id={courtesyOfId}
 				value={courtesyOf}
 				onChange={onChangeCourtesyOf}
 				title="Who gave you this recipe?"
-				/>
-			</label>
-		</div>
-		<div>
-			<label> <input type="checkbox"
+			/>
+			<label htmlFor={isVeganId}> Is Vegan: </label>
+			<input type="checkbox"
+				id={isVeganId}
 				checked={isVegan}
 				onChange={onChangeIsVegan}
-				/> Is Vegan
-			</label>
+			/> 
 		</div>
 	</Section>;
 }
 
-interface IRecipeStatusProps
+interface IRecipeActionsProps
 {
-	recipe: IEditableRecipe;
-	viewUri: string;
+	recipeId: number;
+	isPublished: boolean;
+	publishUri: string;
 }
 
-function RecipeStatus(props: IRecipeStatusProps)
+function RecipeActions(props: IRecipeActionsProps)
 {
-	const { recipe, viewUri } = props;
-	const { isPublished } = recipe;
-
-	const setIsPublished = useSetProp('isPublished');
-	const onChangeIsPublished = useInputCallback((e) => {
-		setIsPublished(!!parseInt(e.target.value));
-	}, []);
+	const { recipeId, publishUri, isPublished } = props;
 
 	const showDialog = useShowDialog();
 	const clickDelete = useCallback(() => {
 		showDialog(true);
 	}, []);
 
-	return <Section title="Status">
-		<p>
-			<a href={viewUri}> View Recipe </a>
-			<button onClick={clickDelete}> Delete Recipe </button>
+	return <div className="recipe-actions">
+		<button onClick={clickDelete}> Delete Recipe </button>
+
+		<form action={publishUri}>
+			<input type="hidden" name="id" value={recipeId} />
+			<input type="hidden" name="publish" value={isPublished ? 0 : 1} />
+			<button> {isPublished ? 'Unpublish' : 'Publish'} Recipe </button>
+		</form>
+	</div>;
+}
+
+interface IRecipeStatusProps
+{
+	recipe: IEditableRecipe;
+	viewUri: string;
+	hasChange: boolean;
+}
+
+function RecipeStatus(props: IRecipeStatusProps)
+{
+	const { recipe, viewUri, hasChange } = props;
+
+	return <React.Fragment>
+		<p className="save-indicator">
+			<input type="checkbox" readOnly checked={!hasChange} /> 
+			Saved
 		</p>
 
-		<fieldset className="visibility">
-			<legend> Visibility </legend>
-			<label>
-				<input type="radio"
-					name="is_published"
-					value="1"
-					checked={isPublished}
-					onChange={onChangeIsPublished}
-					/> Published
-			</label>
-			<label>
-				<input type="radio"
-					name="is_published"
-					value="0"
-					checked={!isPublished}
-					onChange={onChangeIsPublished}
-					/> Private
-			</label>
-		</fieldset>
-	</Section>;
+		<a href={viewUri}> View Recipe </a>
+	</React.Fragment>;
 }
 
 interface INotesProps
@@ -864,14 +882,18 @@ function EditArraySection(props: IEditArraySectionProps)
 	return <Section title={title}>
 		<div onKeyDown={onKeyDown}>
 			<input
+				className="array-text-input"
 				ref={inputRef}
 				type="text"
 				value={selected.value}
 				onChange={onValueChange}
-				size={72}
 			/>
-			<button onClick={onClickAdd}> + </button>
-			<button onClick={onClickRemove}> - </button>
+			<button onClick={onClickAdd}> 
+				<FontAwesomeIcon icon={faPlus} />
+			</button>
+			<button onClick={onClickRemove}> 
+				<FontAwesomeIcon icon={faMinus} />
+			</button>
 		</div>
 		<ol> {items} </ol>
 	</Section>;
@@ -894,10 +916,13 @@ function DeleteDialog(props: IDeleteDialogProps)
 			showDialog(false);
 	}, []);
 
-	return <ModalDialog open={open}>
+	return <ModalDialog open={open} className="warning">
 		<form method="POST" action={deleteUri}>
 			<input type="hidden" name="id" value={recipeId} />
-			<h2> Delete Recipe </h2>
+			<h2>
+				<FontAwesomeIcon icon={faTriangleExclamation} />
+				Delete Recipe
+			</h2>
 			<p>
 				Are you sure you want to delete this recipe? This is a <strong> permanent </strong> action that cannot be undone.
 			</p>
@@ -911,13 +936,13 @@ function DeleteDialog(props: IDeleteDialogProps)
 
 interface ISectionProps
 {
-	title: string;
+	title?: string;
 }
 
 function Section(props: React.PropsWithChildren<ISectionProps>)
 {
 	return <section className="section">
-		<h3> {props.title} </h3>
+		{props.title && <h3> {props.title} </h3>}
 		{props.children}
 	</section>;
 }
@@ -925,11 +950,12 @@ function Section(props: React.PropsWithChildren<ISectionProps>)
 interface IModalDialogProps
 {
 	open: boolean;
+	className?: string;
 }
 
 function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>)
 {
-	const { open, children } = props;
+	const { open, children, className } = props;
 
 	const ref = useRef<HTMLDialogElement>(null);
 
@@ -952,7 +978,7 @@ function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>)
 
 	}, [open]);
 
-	return <dialog ref={ref}>
+	return <dialog ref={ref} className={className}>
 		{children}
 	</dialog>;
 }

@@ -1,6 +1,14 @@
-.warning-box {
+@mixin warning {
 	background-color: var(--system-theme-warning);
 	color: var(--system-theme-warning-text);
+}
+
+.warning {
+	@include warning;
+}
+
+.warning-box {
+	@include warning;
 	border: solid thin;
 	padding: 1em;
 	margin: 1em 0;

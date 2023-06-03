@@ -21,7 +21,7 @@ This is a preview of a draft. Only those who can edit this recipe will be able t
 		name="publish"
 		value="<?=\intval(!$r['is_published'])?>"
 	>
-		<?=$r['is_published'] ? 'Hide' : 'Publish'?> Recipe
+		<?=$r['is_published'] ? 'Unpublish' : 'Publish'?> Recipe
 	</button>
 </form>
 <?php endif; ?>
