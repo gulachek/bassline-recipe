@@ -772,14 +772,14 @@ function EditArraySection(props: IEditArraySectionProps)
 {
 	const { array, title, propKey } = props;
 
-	const inputRef = useRef<HTMLInputElement>(null);
+	const inputRef = useRef<HTMLTextAreaElement>();
 
 	const selected = array.elems[array.selectedIndex];
 	const elemIsEmpty = selected.value === '';
 	const { selectedIndex, elems } = array;
 
 	const setElemValue = useSetElemValue();
-	const onValueChange = useInputCallback((e) => {
+	const onValueChange = useTextCallback((e) => {
 		setElemValue(propKey, e.target.value);
 	}, [propKey]);
 
@@ -804,6 +804,7 @@ function EditArraySection(props: IEditArraySectionProps)
 
 		if (e.key === 'Enter' && inInput)
 		{
+			e.preventDefault();
 			addElem(propKey);
 		}
 		else if (e.key === 'Backspace')
@@ -848,7 +849,6 @@ function EditArraySection(props: IEditArraySectionProps)
 
 	const items = elems.map((e, i) => {
 		
-		const text = i === selectedIndex ? <u> {e.value} </u> : e.value;
 		const onClick = (e: MouseEvent<HTMLLIElement>) => {
 			selectElem(propKey, i);
 			inputRef.current.focus();
@@ -870,24 +870,29 @@ function EditArraySection(props: IEditArraySectionProps)
 			e.preventDefault();
 		};
 
-		return <li
+		let className = 'text-item';
+		if (i === selectedIndex) className += ' selected';
+
+		return <li className="array-item"
 			key={e.id}
-			onClick={onClick}
-			draggable onDragStart={onDragStart}
 			onDrop={onDrop}
 			onDragOver={onDragOver}
-		> {text} </li>;
+			onClick={onClick}
+			draggable onDragStart={onDragStart}
+		>
+		<span className={className} > {e.value} </span>
+		</li>;
 	});
 
 	return <Section title={title}>
 		<div onKeyDown={onKeyDown}>
-			<input
+			<textarea
 				className="array-text-input"
 				ref={inputRef}
-				type="text"
 				value={selected.value}
 				onChange={onValueChange}
 			/>
+			<br />
 			<button onClick={onClickAdd}> 
 				<FontAwesomeIcon icon={faPlus} />
 			</button>

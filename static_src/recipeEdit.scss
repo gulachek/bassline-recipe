@@ -46,3 +46,14 @@ h1 {
 	margin: 0.5em 0;
 	display: flex;
 }
+
+.array-item {
+	color: var(--system-theme-canvas-text);
+	background-color: var(--system-theme-canvas);
+}
+
+.text-item {
+	&.selected {
+		text-decoration: underline;
+	}
+}
