@@ -3,6 +3,7 @@
 namespace Gulachek\Recipe;
 
 use \Gulachek\Bassline\RespondArg;
+use \Gulachek\Bassline\PageLayout;
 
 class ReactPage
 {
@@ -16,6 +17,7 @@ class ReactPage
 		return $arg->renderPage(
 			title: $title,
 			template: __DIR__ . '/react_page.php',
+			layout: PageLayout::manual,
 			args: [
 				'model' => $model,
 				'scripts' => $scripts
