@@ -47,13 +47,29 @@ h1 {
 	display: flex;
 }
 
-.array-item {
-	color: var(--system-theme-canvas-text);
-	background-color: var(--system-theme-canvas);
-}
+.array-edit-list {
+	list-style-type: none;
+	padding: 0;
 
-.text-item {
-	&.selected {
-		text-decoration: underline;
+	display: inline-flex;
+	flex-flow: column;
+
+	.array-item {
+		cursor: move;
+		color: var(--system-theme-button-text);
+		background-color: var(--system-theme-button-face);
+		border: solid thin var(--system-theme-button-border);;
+
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+
+		padding: 0.5em;
+
+		&.selected {
+			//text-decoration: underline;
+			color: var(--system-theme-selected-item-text);
+			background-color: var(--system-theme-selected-item);
+		}
 	}
 }

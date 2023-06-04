@@ -21,7 +21,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	faPlus,
 	faMinus,
-	faTriangleExclamation
+	faTriangleExclamation,
+	faGripVertical
 } from '@fortawesome/free-solid-svg-icons'
 
 import './recipeEdit.scss';
@@ -870,17 +871,18 @@ function EditArraySection(props: IEditArraySectionProps)
 			e.preventDefault();
 		};
 
-		let className = 'text-item';
+		let className = 'array-item';
 		if (i === selectedIndex) className += ' selected';
 
-		return <li className="array-item"
+		return <li className={className}
 			key={e.id}
 			onDrop={onDrop}
 			onDragOver={onDragOver}
 			onClick={onClick}
 			draggable onDragStart={onDragStart}
 		>
-		<span className={className} > {e.value} </span>
+			<FontAwesomeIcon icon={faGripVertical} />
+			{e.value}
 		</li>;
 	});
 
@@ -900,7 +902,7 @@ function EditArraySection(props: IEditArraySectionProps)
 				<FontAwesomeIcon icon={faMinus} />
 			</button>
 		</div>
-		<ol> {items} </ol>
+		<ol className="array-edit-list"> {items} </ol>
 	</Section>;
 }
 
