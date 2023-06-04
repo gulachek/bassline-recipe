@@ -24,6 +24,15 @@ class RecipeDatabase
 		return null;
 	}
 
+	public function countOwnedRecipes(
+		int $owner_uid
+	): int
+	{
+		return $this->db->queryValue('count-recipe', [
+			':owner' => $owner_uid
+		]) ?? 0;
+	}
+
 	public function createRecipe(
 		int $owner_uid
 	): int

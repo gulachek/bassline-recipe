@@ -22,6 +22,8 @@ class RecipeApp extends App
 		'Dessert'
 	];
 
+	private const MAX_RECIPES = 32;
+
 	public function __construct(
 		string $dbPath,
 		private string $baseUri
@@ -74,6 +76,9 @@ class RecipeApp extends App
 			],
 			'edit_any_recipe' => [
 				'description' => 'User can create and edit any recipe, including those created by others. Overrides edit_recipe.'
+			],
+			'create_unlimited_recipes' => [
+				'description' => 'User can create as many recipes as he\'d like.'
 			]
 		];
 	}
@@ -127,6 +132,12 @@ class RecipeApp extends App
 		if (!$this->canCreateRecipe($arg))
 			return new Error(401, 'Not authorized');
 
+		if (!$arg->userCan('create_unlimited_recipes')
+			&& $this->db->countOwnedRecipes($arg->uid()) >= self::MAX_RECIPES)
+		{
+			return new Error(400, 'Recipe limit reached.');
+		}
+
 		$id = $this->db->createRecipe(
 			owner_uid: $arg->uid()
 		);
@@ -134,7 +145,6 @@ class RecipeApp extends App
 		return new Redirect("/{$this->baseUri}/edit?id=$id");
 	}
 
-	// TODO: verify user actually owns recipe
 	public function edit(RespondArg $arg): mixed
 	{
 		$id = \intval($_REQUEST['id']);
