@@ -18,6 +18,16 @@ class RecipeDatabase
 		return new RecipeDatabase(new Database(new \Sqlite3($path)));
 	}
 
+	public function lock(): bool
+	{
+		return $this->db->lock();
+	}
+
+	public function unlock(): void
+	{
+		$this->db->unlock();
+	}
+
 	public function install(): ?string
 	{
 		$this->db->exec('init');

@@ -713,7 +713,7 @@ function RecipeActions(props: IRecipeActionsProps)
 	return <div className="recipe-actions">
 		<button onClick={clickDelete}> Delete Recipe </button>
 
-		<form action={publishUri}>
+		<form method="POST" action={publishUri}>
 			<input type="hidden" name="id" value={recipeId} />
 			<input type="hidden" name="publish" value={isPublished ? 0 : 1} />
 			<button> {isPublished ? 'Unpublish' : 'Publish'} Recipe </button>

@@ -132,79 +132,119 @@ class RecipeApp extends App
 		if (!$this->canCreateRecipe($arg))
 			return new Error(401, 'Not authorized');
 
-		if (!$arg->userCan('create_unlimited_recipes')
-			&& $this->db->countOwnedRecipes($arg->uid()) >= self::MAX_RECIPES)
+		if (!$this->db->lock())
+			return new Error(503, 'Service unavailable');
+
+		try
 		{
-			return new Error(400, 'Recipe limit reached.');
+			if (!$arg->userCan('create_unlimited_recipes')
+				&& $this->db->countOwnedRecipes($arg->uid()) >= self::MAX_RECIPES)
+			{
+				return new Error(400, 'Recipe limit reached.');
+			}
+
+			$id = $this->db->createRecipe(
+				owner_uid: $arg->uid()
+			);
+
+			return new Redirect("/{$this->baseUri}/edit?id=$id");
 		}
-
-		$id = $this->db->createRecipe(
-			owner_uid: $arg->uid()
-		);
-
-		return new Redirect("/{$this->baseUri}/edit?id=$id");
+		finally
+		{
+			$this->db->unlock();
+		}
 	}
 
 	public function edit(RespondArg $arg): mixed
 	{
 		$id = \intval($_REQUEST['id']);
 
-		$recipe = $this->db->loadRecipe($id);
+		if (!$this->db->lock())
+			return new Error(503, 'Service unavailable');
 
-		if (!$recipe)
-			return new Error(404, 'Recipe not found');
+		try
+		{
+			$recipe = $this->db->loadRecipe($id);
 
-		if (!$this->canEditRecipe($arg, $recipe))
-			return new Error(401, 'Not authorized');
+			if (!$recipe)
+				return new Error(404, 'Recipe not found');
 
-		ReactPage::render($arg,
-			title: 'Edit recipe',
-			scripts: ["/{$this->baseUri}/assets/recipeEdit.js"],
-			model: [
-				'recipe' => $recipe,
-				'courses' => self::COURSES,
-				'saveUri' => "/{$this->baseUri}/save",
-				'viewUri' => "/{$this->baseUri}/view?id=$id",
-				'deleteUri' => "/{$this->baseUri}/delete",
-				'publishUri' => "/{$this->baseUri}/publish",
-			]
-		);
-		return null;
+			if (!$this->canEditRecipe($arg, $recipe))
+				return new Error(401, 'Not authorized');
+
+			ReactPage::render($arg,
+				title: 'Edit recipe',
+				scripts: ["/{$this->baseUri}/assets/recipeEdit.js"],
+				model: [
+					'recipe' => $recipe,
+					'courses' => self::COURSES,
+					'saveUri' => "/{$this->baseUri}/save",
+					'viewUri' => "/{$this->baseUri}/view?id=$id",
+					'deleteUri' => "/{$this->baseUri}/delete",
+					'publishUri' => "/{$this->baseUri}/publish",
+				]
+			);
+			return null;
+		}
+		finally
+		{
+			$this->db->unlock();
+		}
 	}
 
 	public function publish(RespondArg $arg): mixed
 	{
 		$id = \intval($_REQUEST['id']);
 
-		$recipe = $this->db->loadRecipe($id);
+		if (!$this->db->lock())
+			return new Error(503, 'Service unavailable');
 
-		if (!$recipe)
-			return new Error(404, 'Recipe not found');
+		try
+		{
+			$recipe = $this->db->loadRecipe($id);
 
-		if (!$this->canEditRecipe($arg, $recipe))
-			return new Error(401, 'Not authorized');
+			if (!$recipe)
+				return new Error(404, 'Recipe not found');
 
-		$recipe['is_published'] = !!\intval($_REQUEST['publish']);
-		$this->db->saveRecipe($recipe);
+			if (!$this->canEditRecipe($arg, $recipe))
+				return new Error(401, 'Not authorized');
 
-		return new Redirect("/{$this->baseUri}/view?id=$id");
+			$recipe['is_published'] = !!\intval($_REQUEST['publish']);
+			$this->db->saveRecipe($recipe);
+
+			return new Redirect("/{$this->baseUri}/view?id=$id");
+		}
+		finally
+		{
+			$this->db->unlock();
+		}
 	}
 
 	public function delete(RespondArg $arg): mixed
 	{
 		$id = \intval($_REQUEST['id']);
 
-		$recipe = $this->db->loadRecipe($id);
+		if (!$this->db->lock())
+			return new Error(503, 'Service unavailable');
 
-		if (!$recipe)
-			return new Error(404, 'Recipe not found');
+		try
+		{
+			$recipe = $this->db->loadRecipe($id);
 
-		if (!$this->canEditRecipe($arg, $recipe))
-			return new Error(401, 'Not authorized');
+			if (!$recipe)
+				return new Error(404, 'Recipe not found');
 
-		$this->db->deleteRecipe($id);
+			if (!$this->canEditRecipe($arg, $recipe))
+				return new Error(401, 'Not authorized');
 
-		return new Redirect("/{$this->baseUri}/my_recipes");
+			$this->db->deleteRecipe($id);
+
+			return new Redirect("/{$this->baseUri}/my_recipes");
+		}
+		finally
+		{
+			$this->db->unlock();
+		}
 	}
 
 	public function save(RespondArg $arg): mixed
@@ -213,123 +253,133 @@ class RecipeApp extends App
 		if (!$req)
 			return new JsonError(400, 'Bad recipe encoding');
 
-		$recipe = $req->recipe;
-		$id = $recipe->id;
+		if (!$this->db->lock())
+			return new Error(503, 'Service unavailable');
 
-		$existing = $this->db->loadRecipe($id);
-		if (!$existing)
-			return new JsonError(404, 'Recipe not found');
-
-		if (!$this->canEditRecipe($arg, $existing))
-			return new JsonError(401, 'Not authorized');
-
-		if ($recipe->course < 1 || $recipe->course > count(self::COURSES))
+		try
 		{
-			return new JsonError(400, 'Bad course');
-		}
+			$recipe = $req->recipe;
+			$id = $recipe->id;
 
-		$existingIngredients = [];
-		foreach ($existing['ingredients'] as $ing)
-		{
-			$existingIngredients[$ing['id']] = true;
-		}
+			$existing = $this->db->loadRecipe($id);
+			if (!$existing)
+				return new JsonError(404, 'Recipe not found');
 
-		foreach ($recipe->ingredients->deletedIds as $ingId)
-		{
-			if (!\array_key_exists($ingId, $existingIngredients))
-				return new JsonError(400, 'Bad deleted ingredient id');
-		}
+			if (!$this->canEditRecipe($arg, $existing))
+				return new JsonError(401, 'Not authorized');
 
-		foreach ($recipe->ingredients->elems as $ing)
-		{
-			if (!$ing->isTemp && !\array_key_exists($ing->id, $existingIngredients))
-				return new JsonError(400, 'Bad saved ingredient id');
-		}
-
-		$existingDirections = [];
-		foreach ($existing['directions'] as $dir)
-		{
-			$existingDirections[$dir['id']] = true;
-		}
-
-		foreach ($recipe->directions->deletedIds as $dirId)
-		{
-			if (!\array_key_exists($dirId, $existingDirections))
-				return new JsonError(400, 'Bad deleted direction id');
-		}
-
-		foreach ($recipe->directions->elems as $dir)
-		{
-			if (!$dir->isTemp && !\array_key_exists($dir->id, $existingDirections))
-				return new JsonError(400, 'Bad saved direction id');
-		}
-
-		// DONE VALIDATING. DO REQUESTED SAVE
-
-		foreach ($recipe->ingredients->deletedIds as $ingId)
-		{
-			$this->db->deleteIngredient($ingId);
-		}
-
-		$mappedIngredients = [];
-		$ingredients = [];
-
-		foreach ($recipe->ingredients->elems as $ing)
-		{
-			$ingId = $ing->id;
-			if ($ing->isTemp)
+			if ($recipe->course < 1 || $recipe->course > count(self::COURSES))
 			{
-				$ingId = $this->db->createIngredient($id);
-				$mappedIngredients[$ing->id] = $ingId;
+				return new JsonError(400, 'Bad course');
 			}
 
-			array_push($ingredients, [
-				'id' => $ingId,
-				'value' => $ing->value,
-			]);
-		}
-
-		foreach ($recipe->directions->deletedIds as $dirId)
-		{
-			$this->db->deleteDirection($dirId);
-		}
-
-		$mappedDirections = [];
-		$directions = [];
-
-		foreach ($recipe->directions->elems as $dir)
-		{
-			$dirId = $dir->id;
-			if ($dir->isTemp)
+			$existingIngredients = [];
+			foreach ($existing['ingredients'] as $ing)
 			{
-				$dirId = $this->db->createDirection($id);
-				$mappedDirections[$dir->id] = $dirId;
+				$existingIngredients[$ing['id']] = true;
 			}
 
-			array_push($directions, [
-				'id' => $dirId,
-				'value' => $dir->value,
+			foreach ($recipe->ingredients->deletedIds as $ingId)
+			{
+				if (!\array_key_exists($ingId, $existingIngredients))
+					return new JsonError(400, 'Bad deleted ingredient id');
+			}
+
+			foreach ($recipe->ingredients->elems as $ing)
+			{
+				if (!$ing->isTemp && !\array_key_exists($ing->id, $existingIngredients))
+					return new JsonError(400, 'Bad saved ingredient id');
+			}
+
+			$existingDirections = [];
+			foreach ($existing['directions'] as $dir)
+			{
+				$existingDirections[$dir['id']] = true;
+			}
+
+			foreach ($recipe->directions->deletedIds as $dirId)
+			{
+				if (!\array_key_exists($dirId, $existingDirections))
+					return new JsonError(400, 'Bad deleted direction id');
+			}
+
+			foreach ($recipe->directions->elems as $dir)
+			{
+				if (!$dir->isTemp && !\array_key_exists($dir->id, $existingDirections))
+					return new JsonError(400, 'Bad saved direction id');
+			}
+
+			// DONE VALIDATING. DO REQUESTED SAVE
+
+			foreach ($recipe->ingredients->deletedIds as $ingId)
+			{
+				$this->db->deleteIngredient($ingId);
+			}
+
+			$mappedIngredients = [];
+			$ingredients = [];
+
+			foreach ($recipe->ingredients->elems as $ing)
+			{
+				$ingId = $ing->id;
+				if ($ing->isTemp)
+				{
+					$ingId = $this->db->createIngredient($id);
+					$mappedIngredients[$ing->id] = $ingId;
+				}
+
+				array_push($ingredients, [
+					'id' => $ingId,
+					'value' => $ing->value,
+				]);
+			}
+
+			foreach ($recipe->directions->deletedIds as $dirId)
+			{
+				$this->db->deleteDirection($dirId);
+			}
+
+			$mappedDirections = [];
+			$directions = [];
+
+			foreach ($recipe->directions->elems as $dir)
+			{
+				$dirId = $dir->id;
+				if ($dir->isTemp)
+				{
+					$dirId = $this->db->createDirection($id);
+					$mappedDirections[$dir->id] = $dirId;
+				}
+
+				array_push($directions, [
+					'id' => $dirId,
+					'value' => $dir->value,
+				]);
+			}
+
+			$recipeToSave = [
+				'id' => $id,
+				'title' => $recipe->title,
+				'is_vegan' => \intval($recipe->isVegan),
+				'is_published' => \intval($recipe->isPublished),
+				'course' => $recipe->course,
+				'notes' => $recipe->notes ? $recipe->notes : null,
+				'courtesy_of' => $recipe->courtesyOf ? $recipe->courtesyOf : null,
+				'ingredients' => $ingredients,
+				'directions' => $directions
+			];
+
+			$this->db->saveRecipe($recipeToSave);
+
+			return new JsonSuccess([
+				'mappedIngredients' => $mappedIngredients,
+				'mappedDirections' => $mappedDirections
 			]);
 		}
-
-		$recipeToSave = [
-			'id' => $id,
-			'title' => $recipe->title,
-			'is_vegan' => \intval($recipe->isVegan),
-			'is_published' => \intval($recipe->isPublished),
-			'course' => $recipe->course,
-			'notes' => $recipe->notes ? $recipe->notes : null,
-			'courtesy_of' => $recipe->courtesyOf ? $recipe->courtesyOf : null,
-			'ingredients' => $ingredients,
-			'directions' => $directions
-		];
-
-		$this->db->saveRecipe($recipeToSave);
-
-		return new JsonSuccess([
-			'mappedIngredients' => $mappedIngredients,
-			'mappedDirections' => $mappedDirections
-		]);
+		finally
+		{
+			$this->db->unlock();
+		}
 	}
 
 	public function myRecipes(RespondArg $arg): mixed

@@ -6,7 +6,8 @@ CREATE TABLE recipe (
 	courtesy_of TEXT, -- who gave the author the recipe?
 	is_vegan INTEGER NOT NULL DEFAULT 0,
 	course INTEGER NOT NULL DEFAULT 1, -- dessert, main dish, etc
-	notes TEXT
+	notes TEXT,
+	save_token TEXT
 );
 
 CREATE TABLE ingredients (
