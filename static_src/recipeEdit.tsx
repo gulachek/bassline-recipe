@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {
 	useReducer,
-	useState,
 	createContext,
 	useContext,
 	useCallback,
@@ -12,6 +11,7 @@ import {
 	MouseEvent,
 	KeyboardEvent,
 	DragEvent,
+	DependencyList,
 } from 'react';
 
 import { renderReactPage } from './renderReactPage';
@@ -37,21 +37,21 @@ type TextChangeCallback = (e: TextChangeEvent) => void;
 
 function useInputCallback(
 	fn: InputChangeCallback,
-	deps: any[]
+	deps: DependencyList
 ): InputChangeCallback {
 	return useCallback(fn, deps);
 }
 
 function useSelectCallback(
 	fn: SelectChangeCallback,
-	deps: any[]
+	deps: DependencyList
 ): SelectChangeCallback {
 	return useCallback(fn, deps);
 }
 
 function useTextCallback(
 	fn: TextChangeCallback,
-	deps: any[]
+	deps: DependencyList
 ): TextChangeCallback {
 	return useCallback(fn, deps);
 }
@@ -226,11 +226,12 @@ interface ISaveErrorResponse {
 interface ISaveSuccessResponse {
 	mappedIngredients: { [tempId: string]: number };
 	mappedDirections: { [tempId: string]: number };
+	error?: never;
 }
 
 type SaveResponse = ISaveErrorResponse | ISaveSuccessResponse;
 
-function isSaveErr(resp: any): resp is ISaveErrorResponse {
+function isSaveErr(resp: SaveResponse): resp is ISaveErrorResponse {
 	return !!resp.error;
 }
 
@@ -777,7 +778,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 	);
 
 	const items = elems.map((e, i) => {
-		const onClick = (_e: MouseEvent<HTMLLIElement>) => {
+		const onClick = () => {
 			selectElem(propKey, i);
 			inputRef.current.focus();
 		};
@@ -898,7 +899,7 @@ function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>) {
 
 	const ref = useRef<HTMLDialogElement>(null);
 
-	type CloseListener = (this: HTMLDialogElement, ev: Event) => any;
+	type CloseListener = (this: HTMLDialogElement, ev: Event) => void;
 	const listener = useRef<CloseListener>(null);
 
 	const showDialog = useShowDialog();
@@ -907,7 +908,7 @@ function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>) {
 		if (listener.current)
 			ref.current.removeEventListener('close', listener.current);
 
-		listener.current = (_e: Event) => {
+		listener.current = () => {
 			showDialog(false);
 		};
 		ref.current.addEventListener('close', listener.current);
