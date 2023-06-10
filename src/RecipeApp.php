@@ -8,6 +8,7 @@ use Gulachek\Bassline\RespondArg;
 use Gulachek\Bassline\Redirect;
 use Gulachek\Bassline\Responder;
 use Gulachek\Bassline\ArrayProperty;
+use Gulachek\Bassline\SaveToken;
 
 class RecipeApp extends App
 {
@@ -27,8 +28,7 @@ class RecipeApp extends App
 	public function __construct(
 		string $dbPath,
 		private string $baseUri
-	)
-	{
+	) {
 		parent::__construct(__DIR__ . '/..');
 		$this->db = RecipeDatabase::fromPath($dbPath);
 	}
@@ -40,7 +40,7 @@ class RecipeApp extends App
 
 	public function version(): Semver
 	{
-		return new Semver(0,1,0);
+		return new Semver(0, 1, 0);
 	}
 
 	public function install(): ?string
@@ -64,8 +64,7 @@ class RecipeApp extends App
 				'default-system-bg' => SystemColor::CANVAS,
 				'default-system-fg' => SystemColor::CANVAS_TEXT
 			],
-			 */
-		];
+			 */];
 	}
 
 	public function capabilities(): array
@@ -91,8 +90,7 @@ class RecipeApp extends App
 	private function canEditRecipe(
 		RespondArg $arg,
 		array $recipe
-	): bool
-	{
+	): bool {
 		if ($arg->userCan('edit_any_recipe'))
 			return true;
 
@@ -105,8 +103,7 @@ class RecipeApp extends App
 	private function canViewRecipe(
 		RespondArg $arg,
 		array $recipe
-	): bool
-	{
+	): bool {
 		if ($this->canEditRecipe($arg, $recipe))
 			return true;
 
@@ -135,11 +132,11 @@ class RecipeApp extends App
 		if (!$this->db->lock())
 			return new Error(503, 'Service unavailable');
 
-		try
-		{
-			if (!$arg->userCan('create_unlimited_recipes')
-				&& $this->db->countOwnedRecipes($arg->uid()) >= self::MAX_RECIPES)
-			{
+		try {
+			if (
+				!$arg->userCan('create_unlimited_recipes')
+				&& $this->db->countOwnedRecipes($arg->uid()) >= self::MAX_RECIPES
+			) {
 				return new Error(400, 'Recipe limit reached.');
 			}
 
@@ -148,9 +145,7 @@ class RecipeApp extends App
 			);
 
 			return new Redirect("/{$this->baseUri}/edit?id=$id");
-		}
-		finally
-		{
+		} finally {
 			$this->db->unlock();
 		}
 	}
@@ -162,8 +157,7 @@ class RecipeApp extends App
 		if (!$this->db->lock())
 			return new Error(503, 'Service unavailable');
 
-		try
-		{
+		try {
 			$recipe = $this->db->loadRecipe($id);
 
 			if (!$recipe)
@@ -172,7 +166,19 @@ class RecipeApp extends App
 			if (!$this->canEditRecipe($arg, $recipe))
 				return new Error(401, 'Not authorized');
 
-			ReactPage::render($arg,
+
+			$token = SaveToken::tryReserveEncoded($arg->uid(), $recipe['save_token']);
+			if (!$token) {
+				$currentToken = SaveToken::decode($recipe['save_token']);
+				$uname = $arg->username($currentToken->userId);
+				return new Error(409, "This recipe is currently being edited by $uname. Try again later.");
+			}
+
+			$recipe['save_token'] = $token->encode();
+			$this->db->saveRecipe($recipe);
+
+			ReactPage::render(
+				$arg,
 				title: 'Edit recipe',
 				scripts: ["/{$this->baseUri}/assets/recipeEdit.js"],
 				model: [
@@ -182,12 +188,11 @@ class RecipeApp extends App
 					'viewUri' => "/{$this->baseUri}/view?id=$id",
 					'deleteUri' => "/{$this->baseUri}/delete",
 					'publishUri' => "/{$this->baseUri}/publish",
+					'initialSaveKey' => $token->key
 				]
 			);
 			return null;
-		}
-		finally
-		{
+		} finally {
 			$this->db->unlock();
 		}
 	}
@@ -199,8 +204,7 @@ class RecipeApp extends App
 		if (!$this->db->lock())
 			return new Error(503, 'Service unavailable');
 
-		try
-		{
+		try {
 			$recipe = $this->db->loadRecipe($id);
 
 			if (!$recipe)
@@ -213,9 +217,7 @@ class RecipeApp extends App
 			$this->db->saveRecipe($recipe);
 
 			return new Redirect("/{$this->baseUri}/view?id=$id");
-		}
-		finally
-		{
+		} finally {
 			$this->db->unlock();
 		}
 	}
@@ -227,8 +229,7 @@ class RecipeApp extends App
 		if (!$this->db->lock())
 			return new Error(503, 'Service unavailable');
 
-		try
-		{
+		try {
 			$recipe = $this->db->loadRecipe($id);
 
 			if (!$recipe)
@@ -240,9 +241,7 @@ class RecipeApp extends App
 			$this->db->deleteRecipe($id);
 
 			return new Redirect("/{$this->baseUri}/my_recipes");
-		}
-		finally
-		{
+		} finally {
 			$this->db->unlock();
 		}
 	}
@@ -254,10 +253,9 @@ class RecipeApp extends App
 			return new JsonError(400, 'Bad recipe encoding');
 
 		if (!$this->db->lock())
-			return new Error(503, 'Service unavailable');
+			return new JsonError(503, 'Service unavailable');
 
-		try
-		{
+		try {
 			$recipe = $req->recipe;
 			$id = $recipe->id;
 
@@ -268,62 +266,66 @@ class RecipeApp extends App
 			if (!$this->canEditRecipe($arg, $existing))
 				return new JsonError(401, 'Not authorized');
 
-			if ($recipe->course < 1 || $recipe->course > count(self::COURSES))
-			{
+			if ($recipe->course < 1 || $recipe->course > count(self::COURSES)) {
 				return new JsonError(400, 'Bad course');
 			}
 
 			$existingIngredients = [];
-			foreach ($existing['ingredients'] as $ing)
-			{
+			foreach ($existing['ingredients'] as $ing) {
 				$existingIngredients[$ing['id']] = true;
 			}
 
-			foreach ($recipe->ingredients->deletedIds as $ingId)
-			{
+			foreach ($recipe->ingredients->deletedIds as $ingId) {
 				if (!\array_key_exists($ingId, $existingIngredients))
 					return new JsonError(400, 'Bad deleted ingredient id');
 			}
 
-			foreach ($recipe->ingredients->elems as $ing)
-			{
+			foreach ($recipe->ingredients->elems as $ing) {
 				if (!$ing->isTemp && !\array_key_exists($ing->id, $existingIngredients))
 					return new JsonError(400, 'Bad saved ingredient id');
 			}
 
 			$existingDirections = [];
-			foreach ($existing['directions'] as $dir)
-			{
+			foreach ($existing['directions'] as $dir) {
 				$existingDirections[$dir['id']] = true;
 			}
 
-			foreach ($recipe->directions->deletedIds as $dirId)
-			{
+			foreach ($recipe->directions->deletedIds as $dirId) {
 				if (!\array_key_exists($dirId, $existingDirections))
 					return new JsonError(400, 'Bad deleted direction id');
 			}
 
-			foreach ($recipe->directions->elems as $dir)
-			{
+			foreach ($recipe->directions->elems as $dir) {
 				if (!$dir->isTemp && !\array_key_exists($dir->id, $existingDirections))
 					return new JsonError(400, 'Bad saved direction id');
 			}
 
+			$token = SaveToken::tryReserveEncoded(
+				$arg->uid(),
+				$existing['save_token'],
+				$req->saveKey ?? 'bad key'
+			);
+
+			if (!$token) {
+				$currentToken = SaveToken::decode($existing['save_token']);
+				$uname = $arg->username($currentToken->userId);
+				return new JsonError(409, [
+					'error' => "This recipe was recently edited by '{$uname}' and the information you see may be inaccurate. You will not be able to edit this recipe until you successfully reload the page."
+				]);
+			}
+
 			// DONE VALIDATING. DO REQUESTED SAVE
 
-			foreach ($recipe->ingredients->deletedIds as $ingId)
-			{
+			foreach ($recipe->ingredients->deletedIds as $ingId) {
 				$this->db->deleteIngredient($ingId);
 			}
 
 			$mappedIngredients = [];
 			$ingredients = [];
 
-			foreach ($recipe->ingredients->elems as $ing)
-			{
+			foreach ($recipe->ingredients->elems as $ing) {
 				$ingId = $ing->id;
-				if ($ing->isTemp)
-				{
+				if ($ing->isTemp) {
 					$ingId = $this->db->createIngredient($id);
 					$mappedIngredients[$ing->id] = $ingId;
 				}
@@ -334,19 +336,16 @@ class RecipeApp extends App
 				]);
 			}
 
-			foreach ($recipe->directions->deletedIds as $dirId)
-			{
+			foreach ($recipe->directions->deletedIds as $dirId) {
 				$this->db->deleteDirection($dirId);
 			}
 
 			$mappedDirections = [];
 			$directions = [];
 
-			foreach ($recipe->directions->elems as $dir)
-			{
+			foreach ($recipe->directions->elems as $dir) {
 				$dirId = $dir->id;
-				if ($dir->isTemp)
-				{
+				if ($dir->isTemp) {
 					$dirId = $this->db->createDirection($id);
 					$mappedDirections[$dir->id] = $dirId;
 				}
@@ -366,18 +365,18 @@ class RecipeApp extends App
 				'notes' => $recipe->notes ? $recipe->notes : null,
 				'courtesy_of' => $recipe->courtesyOf ? $recipe->courtesyOf : null,
 				'ingredients' => $ingredients,
-				'directions' => $directions
+				'directions' => $directions,
+				'save_token' => $token->encode()
 			];
 
 			$this->db->saveRecipe($recipeToSave);
 
 			return new JsonSuccess([
 				'mappedIngredients' => $mappedIngredients,
-				'mappedDirections' => $mappedDirections
+				'mappedDirections' => $mappedDirections,
+				'newSaveKey' => $token->key
 			]);
-		}
-		finally
-		{
+		} finally {
 			$this->db->unlock();
 		}
 	}
@@ -388,8 +387,7 @@ class RecipeApp extends App
 
 		$can_create = $this->canCreateRecipe($arg);
 
-		if ($can_create)
-		{
+		if ($can_create) {
 			$recipes = $this->db->loadMyRecipes($arg->uid());
 		}
 
@@ -447,8 +445,7 @@ class JsonSuccess extends Responder
 {
 	public function __construct(
 		public array $body
-	)
-	{
+	) {
 	}
 
 	public function respond(RespondArg $arg): mixed
@@ -464,15 +461,14 @@ class JsonError extends Responder
 	public function __construct(
 		public int $code,
 		public ?string $msg = null
-	)
-	{
+	) {
 	}
 
 	public function respond(RespondArg $arg): mixed
 	{
 		\http_response_code($this->code);
 		\header('Content-Type: application/json');
-		echo \json_encode([ 'error' => $this->msg ]);
+		echo \json_encode(['error' => $this->msg]);
 		return null;
 	}
 }
@@ -511,4 +507,5 @@ class EditableRecipe
 class RecipeSaveRequest
 {
 	public EditableRecipe $recipe;
+	public string $saveKey;
 }

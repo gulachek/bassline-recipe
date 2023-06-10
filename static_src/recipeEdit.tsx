@@ -124,6 +124,7 @@ interface IEditState {
 	isSaving: boolean;
 	tempIdCounter: number;
 	showDeleteDialog: boolean;
+	saveKey: string;
 }
 
 interface ISetPropAction<PropKey extends keyof IEditableRecipe> {
@@ -226,6 +227,7 @@ interface ISaveErrorResponse {
 interface ISaveSuccessResponse {
 	mappedIngredients: { [tempId: string]: number };
 	mappedDirections: { [tempId: string]: number };
+	newSaveKey: string;
 	error?: never;
 }
 
@@ -237,6 +239,7 @@ function isSaveErr(resp: SaveResponse): resp is ISaveErrorResponse {
 
 interface ISaveRequest {
 	recipe: IEditableRecipe;
+	saveKey: string;
 }
 
 interface IEndSaveAction {
@@ -269,7 +272,8 @@ type EditAction =
 	| SetPropActions[keyof IEditableRecipe];
 
 function reducer(state: IEditState, action: EditAction): IEditState {
-	let { isSaving, savedRecipe, tempIdCounter, showDeleteDialog } = state;
+	let { isSaving, savedRecipe, tempIdCounter, showDeleteDialog, saveKey } =
+		state;
 
 	const recipe = { ...state.recipe };
 
@@ -366,6 +370,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 			recipe.ingredients = currentIngredients;
 			recipe.directions = currentDirections;
 			savedRecipe = reqRec;
+			saveKey = response.newSaveKey;
 		}
 	} else if (action.type === 'showDialog') {
 		showDeleteDialog = action.show;
@@ -377,6 +382,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		savedRecipe,
 		showDeleteDialog,
 		recipe,
+		saveKey,
 	};
 }
 
@@ -461,6 +467,7 @@ interface IPageModel {
 	viewUri: string;
 	deleteUri: string;
 	publishUri: string;
+	initialSaveKey: string;
 }
 
 function Page(props: IPageModel) {
@@ -490,25 +497,26 @@ function Page(props: IPageModel) {
 		isSaving: false,
 		tempIdCounter: -1,
 		showDeleteDialog: false,
+		saveKey: props.initialSaveKey,
 	};
 
 	const [state, dispatch] = useReducer(reducer, initialState);
 
 	const hasChange = pageHasChange(state);
 
-	const { recipe } = state;
+	const { recipe, saveKey } = state;
 
 	const onSave = useCallback(async () => {
 		dispatch({ type: 'beginSave' });
 
-		const request = { recipe: structuredClone(recipe) };
+		const request = { recipe: structuredClone(recipe), saveKey };
 
 		const response = await postJson<SaveResponse>(props.saveUri, {
 			body: request,
 		});
 
 		dispatch({ type: 'endSave', response, request });
-	}, [recipe]);
+	}, [recipe, saveKey]);
 
 	return (
 		<React.Fragment>

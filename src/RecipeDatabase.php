@@ -93,7 +93,8 @@ class RecipeDatabase
 			':is_published' => $recipe['is_published'],
 			':course' => $recipe['course'],
 			':notes' => $recipe['notes'],
-			':courtesy_of' => $recipe['courtesy_of']
+			':courtesy_of' => $recipe['courtesy_of'],
+			':save_token' => $recipe['save_token']
 		]);
 
 		$i = 0;
