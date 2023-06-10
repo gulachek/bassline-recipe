@@ -8,8 +8,7 @@ class RecipeDatabase
 {
 	public function __construct(
 		private Database $db
-	)
-	{
+	) {
 		$this->db->mountNamedQueries(__DIR__ . '/../sql');
 	}
 
@@ -36,8 +35,7 @@ class RecipeDatabase
 
 	public function countOwnedRecipes(
 		int $owner_uid
-	): int
-	{
+	): int {
 		return $this->db->queryValue('count-recipe', [
 			':owner' => $owner_uid
 		]) ?? 0;
@@ -45,8 +43,7 @@ class RecipeDatabase
 
 	public function createRecipe(
 		int $owner_uid
-	): int
-	{
+	): int {
 		$this->db->query('create-recipe', [
 			':owner' => $owner_uid
 		]);
@@ -61,8 +58,7 @@ class RecipeDatabase
 
 	public function deleteRecipe(
 		int $recipe_id
-	): void
-	{
+	): void {
 		$this->db->query('delete-recipe', $recipe_id);
 		$this->db->query('delete-ingredients', $recipe_id);
 		$this->db->query('delete-directions', $recipe_id);
@@ -70,8 +66,7 @@ class RecipeDatabase
 
 	public function loadRecipe(
 		int $id
-	): ?array
-	{
+	): ?array {
 		$recipe = $this->db->queryRow('load-recipe', $id);
 		if (!$recipe)
 			return null;
@@ -102,8 +97,7 @@ class RecipeDatabase
 		]);
 
 		$i = 0;
-		foreach ($recipe['ingredients'] as $ing)
-		{
+		foreach ($recipe['ingredients'] as $ing) {
 			$this->db->query('save-ingredient', [
 				':order' => ++$i,
 				':id' => $ing['id'],
@@ -112,8 +106,7 @@ class RecipeDatabase
 		}
 
 		$i = 0;
-		foreach ($recipe['directions'] as $dir)
-		{
+		foreach ($recipe['directions'] as $dir) {
 			$this->db->query('save-direction', [
 				':order' => ++$i,
 				':id' => $dir['id'],
@@ -153,7 +146,7 @@ class RecipeDatabase
 		$rows = [];
 		$result = $this->db->query('load-my-recipes', [
 			':uid' => $uid
-		]);	
+		]);
 
 		foreach ($result->rows() as $row)
 			array_push($rows, $row);
@@ -164,7 +157,7 @@ class RecipeDatabase
 	public function loadPublishedRecipes(): array
 	{
 		$rows = [];
-		$result = $this->db->query('load-published-recipes');	
+		$result = $this->db->query('load-published-recipes');
 
 		foreach ($result->rows() as $row)
 			array_push($rows, $row);
