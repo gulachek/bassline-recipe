@@ -309,9 +309,7 @@ class RecipeApp extends App
 			if (!$token) {
 				$currentToken = SaveToken::decode($existing['save_token']);
 				$uname = $arg->username($currentToken->userId);
-				return new JsonError(409, [
-					'error' => "This recipe was recently edited by '{$uname}' and the information you see may be inaccurate. You will not be able to edit this recipe until you successfully reload the page."
-				]);
+				return new JsonError(409, "This recipe was recently edited by '{$uname}' and the information you see may be inaccurate. You will not be able to edit this recipe until you successfully reload the page.");
 			}
 
 			// DONE VALIDATING. DO REQUESTED SAVE
