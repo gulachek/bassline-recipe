@@ -1,4 +1,5 @@
 {
+	"name": "gulachek/bassline-recipe",
 	"repositories": [
 		{
 			"type": "vcs",
