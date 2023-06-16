@@ -1,17 +1,12 @@
 {
 	"name": "gulachek/bassline-recipe",
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/gulachek/bassline"
-		}
-	],
-	"require": {
-		"gulachek/bassline": "dev-master"
-	},
 	"autoload": {
 		"psr-4": {
 			"Gulachek\\Recipe\\": "src/"
 		}
+	},
+	"minimum-stability": "dev",
+	"require": {
+		"gulachek/bassline": "dev-master"
 	}
 }
