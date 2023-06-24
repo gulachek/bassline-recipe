@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "firebase/php-jwt",
-            "version": "v6.7.0",
+            "version": "v6.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "71278f20b0a623389beefe87a641d03948a38870"
+                "reference": "48b0210c51718d682e53210c24d25c5a10a2299b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/71278f20b0a623389beefe87a641d03948a38870",
-                "reference": "71278f20b0a623389beefe87a641d03948a38870",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/48b0210c51718d682e53210c24d25c5a10a2299b",
+                "reference": "48b0210c51718d682e53210c24d25c5a10a2299b",
                 "shasum": ""
             },
             "require": {
@@ -65,9 +65,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.7.0"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.8.0"
             },
-            "time": "2023-06-14T15:29:26+00:00"
+            "time": "2023-06-20T16:45:35+00:00"
         },
         {
             "name": "google/apiclient",
@@ -141,7 +141,7 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.304.0",
+            "version": "v0.305.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
@@ -179,7 +179,7 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.304.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.305.0"
             },
             "time": "2023-06-07T02:11:36+00:00"
         },
@@ -247,12 +247,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/gulachek/bassline.git",
-                "reference": "7c0553965f6da4492b3c8a4374e2e7443e282559"
+                "reference": "c852a07059a6a02ebdbfb8518437da7afe96861a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gulachek/bassline/zipball/7c0553965f6da4492b3c8a4374e2e7443e282559",
-                "reference": "7c0553965f6da4492b3c8a4374e2e7443e282559",
+                "url": "https://api.github.com/repos/gulachek/bassline/zipball/c852a07059a6a02ebdbfb8518437da7afe96861a",
+                "reference": "c852a07059a6a02ebdbfb8518437da7afe96861a",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "issues": "https://github.com/gulachek/bassline/issues",
                 "source": "https://github.com/gulachek/bassline/tree/master"
             },
-            "time": "2023-06-16T02:56:16+00:00"
+            "time": "2023-06-24T17:19:05+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -612,12 +612,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "b05bf55097060ec20f49ccec0cf2f8e5aaa468b3"
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/b05bf55097060ec20f49ccec0cf2f8e5aaa468b3",
-                "reference": "b05bf55097060ec20f49ccec0cf2f8e5aaa468b3",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e2392369686d420ca32df3803de28b5d6f76867d",
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d",
                 "shasum": ""
             },
             "require": {
@@ -632,7 +632,7 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "elasticsearch/elasticsearch": "^7 || ^8",
                 "ext-json": "*",
-                "graylog2/gelf-php": "^1.4.2 || ^2@dev",
+                "graylog2/gelf-php": "^1.4.2 || ^2.0",
                 "guzzlehttp/guzzle": "^7.4.5",
                 "guzzlehttp/psr7": "^2.2",
                 "mongodb/mongodb": "^1.8",
@@ -640,7 +640,7 @@
                 "phpstan/phpstan": "^1.9",
                 "phpstan/phpstan-deprecation-rules": "^1.0",
                 "phpstan/phpstan-strict-rules": "^1.4",
-                "phpunit/phpunit": "^9.5.26",
+                "phpunit/phpunit": "^10.1",
                 "predis/predis": "^1.1 || ^2",
                 "ruflin/elastica": "^7",
                 "symfony/mailer": "^5.4 || ^6",
@@ -694,7 +694,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/main"
+                "source": "https://github.com/Seldaek/monolog/tree/3.4.0"
             },
             "funding": [
                 {
@@ -706,7 +706,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-03-10T14:05:37+00:00"
+            "time": "2023-06-21T08:46:11+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
@@ -1318,7 +1318,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "gulachek/bassline": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

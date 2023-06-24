@@ -38,6 +38,11 @@ class RecipeApp extends App
 		return 'Recipe';
 	}
 
+	public function iconPath(): string
+	{
+		return __DIR__ . '/utensils.svg';
+	}
+
 	public function version(): Semver
 	{
 		return new Semver(0, 1, 0);
