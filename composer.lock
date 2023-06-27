@@ -141,16 +141,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.305.0",
+            "version": "v0.306.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "6731fd0d3e2f1ff2794f36108b55c0a3480edf3d"
+                "reference": "eb778b9e1f7a9020d258f4dde7af776fc81ef8d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/6731fd0d3e2f1ff2794f36108b55c0a3480edf3d",
-                "reference": "6731fd0d3e2f1ff2794f36108b55c0a3480edf3d",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/eb778b9e1f7a9020d258f4dde7af776fc81ef8d9",
+                "reference": "eb778b9e1f7a9020d258f4dde7af776fc81ef8d9",
                 "shasum": ""
             },
             "require": {
@@ -179,9 +179,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.305.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.306.0"
             },
-            "time": "2023-06-07T02:11:36+00:00"
+            "time": "2023-06-26T00:52:13+00:00"
         },
         {
             "name": "google/auth",
@@ -247,12 +247,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/gulachek/bassline.git",
-                "reference": "c852a07059a6a02ebdbfb8518437da7afe96861a"
+                "reference": "76c462fd475ce150cfdd4c6046e4ba6e5ce959c8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gulachek/bassline/zipball/c852a07059a6a02ebdbfb8518437da7afe96861a",
-                "reference": "c852a07059a6a02ebdbfb8518437da7afe96861a",
+                "url": "https://api.github.com/repos/gulachek/bassline/zipball/76c462fd475ce150cfdd4c6046e4ba6e5ce959c8",
+                "reference": "76c462fd475ce150cfdd4c6046e4ba6e5ce959c8",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "issues": "https://github.com/gulachek/bassline/issues",
                 "source": "https://github.com/gulachek/bassline/tree/master"
             },
-            "time": "2023-06-24T17:19:05+00:00"
+            "time": "2023-06-27T05:38:12+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -831,12 +831,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "862b9662a20ef7a4aff720b68ffba790ed02878f"
+                "reference": "bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/862b9662a20ef7a4aff720b68ffba790ed02878f",
-                "reference": "862b9662a20ef7a4aff720b68ffba790ed02878f",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437",
+                "reference": "bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437",
                 "shasum": ""
             },
             "require": {
@@ -933,7 +933,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-13T08:42:25+00:00"
+            "time": "2023-06-25T15:03:16+00:00"
         },
         {
             "name": "psr/cache",
