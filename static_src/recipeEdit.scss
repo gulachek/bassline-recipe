@@ -48,6 +48,11 @@ h1 {
 	gap: 0.25em;
 }
 
+.array-text-input {
+	width: 100%;
+	font-size: 16px;
+}
+
 .array-edit-list {
 	list-style-type: none;
 	padding: 0;
@@ -59,7 +64,7 @@ h1 {
 		cursor: move;
 		color: var(--system-theme-button-text);
 		background-color: var(--system-theme-button-face);
-		border: solid thin var(--system-theme-button-border);;
+		border: solid thin var(--system-theme-button-border);
 
 		display: flex;
 		align-items: center;

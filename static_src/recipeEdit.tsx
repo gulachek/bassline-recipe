@@ -271,6 +271,12 @@ type EditAction =
 	| IShowDialogAction
 	| SetPropActions[keyof IEditableRecipe];
 
+function normalizeLine(line: string): string {
+	if (line.match(/^\s+$/)) return '';
+
+	return line.replace(/\s+/, ' ');
+}
+
 function reducer(state: IEditState, action: EditAction): IEditState {
 	let { isSaving, savedRecipe, tempIdCounter, showDeleteDialog, saveKey } =
 		state;
@@ -283,10 +289,26 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		const { propKey, value } = action;
 		const array = recipe[propKey];
 		const { selectedIndex, deletedIds } = array;
-		const elems = [...array.elems];
-		const elem = { ...elems[selectedIndex] };
-		elem.value = value;
-		elems[selectedIndex] = elem;
+		const elems = [];
+
+		for (let i = 0; i < array.elems.length; ++i) {
+			if (i === selectedIndex) {
+				const lines = (value || '').split(/[\r\n]/);
+				const elem = { ...array.elems[selectedIndex] };
+				elem.value = lines[0]; // normalizing selected line causes weird cursor jumpiness
+				elems.push(elem);
+
+				// subsequent lines are filtered out if whitespace
+				for (let j = 1; j < lines.length; ++j) {
+					const line = normalizeLine(lines[j]);
+					if (line)
+						elems.push({ id: --tempIdCounter, value: line, isTemp: true });
+				}
+			} else {
+				elems.push(array.elems[i]);
+			}
+		}
+
 		recipe[propKey] = { selectedIndex, deletedIds, elems };
 	} else if (action.type === 'addElem') {
 		const { propKey } = action;
