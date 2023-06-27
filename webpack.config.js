@@ -1,17 +1,17 @@
 const path = require('path');
 
-function resolve(p)
-{
+function resolve(p) {
 	return path.resolve(__dirname, p);
 }
 
 module.exports = {
+	devtool: 'eval-source-map',
 	entry: {
 		react: ['react', 'react-dom'],
 		recipeEdit: {
 			import: resolve('static_src/recipeEdit.tsx'),
 			filename: '[name].js',
-			dependOn: ['react']
+			dependOn: ['react'],
 		},
 	},
 	module: {
@@ -19,28 +19,28 @@ module.exports = {
 			{
 				test: /\.tsx?$/,
 				use: 'ts-loader',
-				exclude: /node_modules/
+				exclude: /node_modules/,
 			},
 			{
 				test: /\.s?css$/i,
 				use: [
 					{
-						loader: "style-loader",
-						options: { injectType: "linkTag" }
+						loader: 'style-loader',
+						options: { injectType: 'linkTag' },
 					},
 					{
-						loader: "file-loader",
+						loader: 'file-loader',
 						options: { name: '[name].css' },
 					},
-					"sass-loader",
+					'sass-loader',
 				],
-					                                                                 },
-		]
+			},
+		],
 	},
 	resolve: {
 		extensions: ['.tsx', '.ts', '.js'],
 	},
 	output: {
-		path: path.resolve(__dirname, 'assets')
-	}
+		path: path.resolve(__dirname, 'assets'),
+	},
 };

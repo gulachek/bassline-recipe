@@ -312,11 +312,14 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		const elems = [...array.elems];
 		const elem = elems[selectedIndex];
 
-		if (elems.length > 1) elems.splice(selectedIndex, 1);
-		else elems[0].value = '';
-
 		const deletedIds = [...array.deletedIds];
-		deletedIds.push(elem.id);
+
+		if (elems.length > 1) {
+			elems.splice(selectedIndex, 1);
+			deletedIds.push(elem.id);
+		} else {
+			elems[0].value = '';
+		}
 
 		recipe[propKey] = {
 			selectedIndex: Math.max(0, selectedIndex - 1),
@@ -722,9 +725,9 @@ function EditArraySection(props: IEditArraySectionProps) {
 
 	const inputRef = useRef<HTMLTextAreaElement>();
 
-	const selected = array.elems[array.selectedIndex];
-	const elemIsEmpty = selected.value === '';
 	const { selectedIndex, elems } = array;
+	const selected = elems[selectedIndex];
+	const elemIsEmpty = selected.value === '';
 
 	const setElemValue = useSetElemValue();
 	const onValueChange = useTextCallback(
