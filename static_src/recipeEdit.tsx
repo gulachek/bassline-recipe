@@ -760,13 +760,9 @@ function EditArraySection(props: IEditArraySectionProps) {
 			if (e.key === 'Enter' && inInput) {
 				e.preventDefault();
 				addElem(propKey);
-			} else if (e.key === 'Backspace') {
-				if (!inInput) {
-					removeElem(propKey);
-				} else if ((elemIsEmpty && !e.repeat) || e.shiftKey) {
-					removeElem(propKey);
-					e.preventDefault();
-				}
+			} else if (e.key === 'Delete' && !e.shiftKey) {
+				removeElem(propKey);
+				e.preventDefault();
 			} else if (e.key === 'ArrowDown') {
 				if (e.shiftKey) {
 					if (selectedIndex < count - 1)
