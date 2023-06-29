@@ -50,8 +50,19 @@ class RecipeDatabase
 
 		$id = $this->db->lastInsertRowID();
 
-		$this->createIngredient($id);
-		$this->createDirection($id);
+		$ingredient = $this->createIngredient($id);
+		$this->db->query('save-ingredient', [
+			':order' => 0,
+			':id' => $ingredient,
+			':value' => '1/4 cup Example food'
+		]);
+
+		$direction = $this->createDirection($id);
+		$this->db->query('save-direction', [
+			':order' => 0,
+			':id' => $direction,
+			':value' => 'Heat the oven to 350 degrees.'
+		]);
 
 		return $id;
 	}
