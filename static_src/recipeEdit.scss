@@ -83,3 +83,46 @@ textarea {
 		}
 	}
 }
+
+.save-indicator {
+	margin: 0.25em;
+	display: flex;
+	align-items: center;
+	gap: 0.25em;
+
+	.icon {
+		box-sizing: border-box;
+		$size: 1.1em;
+		width: $size;
+		height: $size;
+		padding: 0.05em;
+		border-radius: calc($size / 2);
+
+		&.error {
+			color: var(--system-theme-error);
+			background-color: var(--system-theme-error-text);
+			border-color: var(--system-theme-error-text);
+		}
+
+		&.success {
+			color: var(--system-theme-success);
+			background-color: var(--system-theme-success-text);
+			border-color: var(--system-theme-success-text);
+		}
+	}
+}
+
+.error-banner {
+	background-color: var(--system-theme-error);
+	color: var(--system-theme-error-text);
+
+	border: {
+		color: var(--system-theme-error-text);
+		width: thin;
+		style: solid;
+	}
+
+	padding: 1em;
+	margin: 0.5em auto;
+	width: fit-content;
+}

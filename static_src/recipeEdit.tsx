@@ -23,6 +23,9 @@ import {
 	faMinus,
 	faTriangleExclamation,
 	faGripVertical,
+	faSpinner,
+	faCircleCheck,
+	faCircleXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 import './recipeEdit.scss';
@@ -125,6 +128,7 @@ interface IEditState {
 	tempIdCounter: number;
 	showDeleteDialog: boolean;
 	saveKey: string;
+	fatalError: string | null;
 }
 
 interface ISetPropAction<PropKey extends keyof IEditableRecipe> {
@@ -278,8 +282,14 @@ function normalizeLine(line: string): string {
 }
 
 function reducer(state: IEditState, action: EditAction): IEditState {
-	let { isSaving, savedRecipe, tempIdCounter, showDeleteDialog, saveKey } =
-		state;
+	let {
+		isSaving,
+		savedRecipe,
+		tempIdCounter,
+		showDeleteDialog,
+		saveKey,
+		fatalError,
+	} = state;
 
 	const recipe = { ...state.recipe };
 
@@ -374,6 +384,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		isSaving = false;
 
 		if (isSaveErr(response)) {
+			fatalError = response.error;
 			console.error(response.error);
 		} else {
 			const reqRec = request.recipe;
@@ -408,6 +419,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		showDeleteDialog,
 		recipe,
 		saveKey,
+		fatalError,
 	};
 }
 
@@ -523,13 +535,14 @@ function Page(props: IPageModel) {
 		tempIdCounter: -1,
 		showDeleteDialog: false,
 		saveKey: props.initialSaveKey,
+		fatalError: null,
 	};
 
 	const [state, dispatch] = useReducer(reducer, initialState);
 
 	const hasChange = pageHasChange(state);
 
-	const { recipe, saveKey } = state;
+	const { recipe, saveKey, fatalError } = state;
 
 	const onSave = useCallback(async () => {
 		dispatch({ type: 'beginSave' });
@@ -543,15 +556,18 @@ function Page(props: IPageModel) {
 		dispatch({ type: 'endSave', response, request });
 	}, [recipe, saveKey]);
 
+	const hasError = !!fatalError;
+
 	return (
 		<React.Fragment>
 			<RecipeDispatchContext.Provider value={dispatch}>
-				<AutoSaveForm onSave={onSave} hasChange={hasChange} />
+				<AutoSaveForm onSave={onSave} hasChange={hasChange && !hasError} />
 				<DeleteDialog
 					open={state.showDeleteDialog}
 					deleteUri={props.deleteUri}
 					recipeId={recipe.id}
 				/>
+				{fatalError && <ErrorBanner msg={fatalError} />}
 				<div className="header">
 					<h1> Edit recipe </h1>
 				</div>
@@ -588,6 +604,7 @@ function Page(props: IPageModel) {
 						recipe={recipe}
 						viewUri={props.viewUri}
 						hasChange={hasChange}
+						hasError={hasError}
 					/>
 				</div>
 			</RecipeDispatchContext.Provider>
@@ -702,18 +719,15 @@ interface IRecipeStatusProps {
 	recipe: IEditableRecipe;
 	viewUri: string;
 	hasChange: boolean;
+	hasError: boolean;
 }
 
 function RecipeStatus(props: IRecipeStatusProps) {
-	const { viewUri, hasChange } = props;
+	const { viewUri, hasChange, hasError } = props;
 
 	return (
 		<React.Fragment>
-			<p className="save-indicator">
-				<input type="checkbox" readOnly checked={!hasChange} />
-				Saved
-			</p>
-
+			<SaveIndicator isSaving={hasChange && !hasError} showError={hasError} />
 			<a href={viewUri}> View Recipe </a>
 		</React.Fragment>
 	);
@@ -950,6 +964,55 @@ function ModalDialog(props: React.PropsWithChildren<IModalDialogProps>) {
 		<dialog ref={ref} className={className}>
 			{children}
 		</dialog>
+	);
+}
+
+interface ISaveIndicatorProps {
+	isSaving: boolean;
+	showError: boolean;
+}
+
+function SaveIndicator(props: ISaveIndicatorProps) {
+	const { showError, isSaving } = props;
+	let icon, className, text;
+
+	if (showError) {
+		icon = <FontAwesomeIcon className="icon error" icon={faCircleXmark} />;
+		text = 'Error';
+		className = 'error';
+	} else if (isSaving) {
+		icon = <FontAwesomeIcon className="icon saving" icon={faSpinner} spin />;
+		text = 'Saving';
+		className = 'saving';
+	} else {
+		icon = <FontAwesomeIcon className="icon success" icon={faCircleCheck} />;
+		text = 'Saved';
+		className = 'success';
+	}
+
+	return (
+		<p className="save-indicator">
+			{icon}
+			<span className={className + ' text'}> {text} </span>
+		</p>
+	);
+}
+
+interface IErrorBannerProps {
+	msg: string;
+}
+
+function ErrorBanner(props: IErrorBannerProps) {
+	const divRef = useRef<HTMLDivElement>();
+	useEffect(() => {
+		if (divRef.current) divRef.current.scrollIntoView();
+	});
+
+	const { msg } = props;
+	return (
+		<div ref={divRef} className="error-banner">
+			{msg}
+		</div>
 	);
 }
 
