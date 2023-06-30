@@ -597,7 +597,7 @@ function Page(props: IPageModel) {
 
 	const hasChange = pageHasChange(state);
 
-	const { recipe, saveKey, fatalError, validity } = state;
+	const { recipe, saveKey, fatalError, validity, isSaving } = state;
 
 	const onSave = useCallback(async () => {
 		dispatch({ type: 'beginSave' });
@@ -612,11 +612,12 @@ function Page(props: IPageModel) {
 	}, [recipe, saveKey]);
 
 	const hasError = !!fatalError || !isValid(validity);
+	const shouldSave = hasChange && !(isSaving || hasError);
 
 	return (
 		<React.Fragment>
 			<RecipeDispatchContext.Provider value={dispatch}>
-				<AutoSaveForm onSave={onSave} hasChange={hasChange && !hasError} />
+				<AutoSaveForm onSave={onSave} shouldSave={shouldSave} />
 				<DeleteDialog
 					open={state.showDeleteDialog}
 					deleteUri={props.deleteUri}
@@ -665,7 +666,7 @@ function Page(props: IPageModel) {
 					<RecipeStatus
 						recipe={recipe}
 						viewUri={props.viewUri}
-						hasChange={hasChange}
+						isSaving={isSaving || shouldSave}
 						hasError={hasError}
 					/>
 				</div>
@@ -798,16 +799,16 @@ function RecipeActions(props: IRecipeActionsProps) {
 interface IRecipeStatusProps {
 	recipe: IEditableRecipe;
 	viewUri: string;
-	hasChange: boolean;
+	isSaving: boolean;
 	hasError: boolean;
 }
 
 function RecipeStatus(props: IRecipeStatusProps) {
-	const { viewUri, hasChange, hasError } = props;
+	const { viewUri, isSaving, hasError } = props;
 
 	return (
 		<React.Fragment>
-			<SaveIndicator isSaving={hasChange && !hasError} showError={hasError} />
+			<SaveIndicator isSaving={isSaving} showError={hasError} />
 			<a href={viewUri}> View Recipe </a>
 		</React.Fragment>
 	);
@@ -1077,14 +1078,14 @@ function SaveIndicator(props: ISaveIndicatorProps) {
 	const { showError, isSaving } = props;
 	let icon, className, text;
 
-	if (showError) {
-		icon = <FontAwesomeIcon className="icon error" icon={faCircleXmark} />;
-		text = 'Error';
-		className = 'error';
-	} else if (isSaving) {
+	if (isSaving) {
 		icon = <FontAwesomeIcon className="icon saving" icon={faSpinner} spin />;
 		text = 'Saving';
 		className = 'saving';
+	} else if (showError) {
+		icon = <FontAwesomeIcon className="icon error" icon={faCircleXmark} />;
+		text = 'Error';
+		className = 'error';
 	} else {
 		icon = <FontAwesomeIcon className="icon success" icon={faCircleCheck} />;
 		text = 'Saved';
