@@ -552,6 +552,7 @@ interface IPageModel {
 	titleField: IInputProps;
 	courtesyOfField: IInputProps;
 	notesField: IInputProps;
+	maxListEntries: number;
 }
 
 function Page(props: IPageModel) {
@@ -644,6 +645,7 @@ function Page(props: IPageModel) {
 						title="Ingredients"
 						propKey="ingredients"
 						array={recipe.ingredients}
+						maxLength={props.maxListEntries}
 					/>
 
 					<hr />
@@ -652,6 +654,7 @@ function Page(props: IPageModel) {
 						title="Directions"
 						propKey="directions"
 						array={recipe.directions}
+						maxLength={props.maxListEntries}
 					/>
 
 					<hr />
@@ -851,10 +854,11 @@ interface IEditArraySectionProps {
 	array: IEditableArray;
 	title: string;
 	propKey: EditableArrayProps;
+	maxLength: number; // max number of entries
 }
 
 function EditArraySection(props: IEditArraySectionProps) {
-	const { array, title, propKey } = props;
+	const { array, title, propKey, maxLength } = props;
 
 	const inputRef = useRef<HTMLTextAreaElement>();
 
@@ -892,7 +896,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 
 			if (e.key === 'Enter' && inInput) {
 				e.preventDefault();
-				addElem(propKey);
+				if (count < maxLength) addElem(propKey);
 			} else if (e.key === 'Delete' && !e.shiftKey) {
 				removeElem(propKey);
 				e.preventDefault();
@@ -914,7 +918,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 				e.preventDefault();
 			}
 		},
-		[propKey, elemIsEmpty, elems.length, selectedIndex]
+		[propKey, elemIsEmpty, elems.length, selectedIndex, maxLength]
 	);
 
 	const items = elems.map((e, i) => {
@@ -968,7 +972,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 					onChange={onValueChange}
 				/>
 				<br />
-				<button onClick={onClickAdd}>
+				<button onClick={onClickAdd} disabled={elems.length >= maxLength}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 				<button onClick={onClickRemove}>

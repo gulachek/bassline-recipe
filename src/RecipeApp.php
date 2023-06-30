@@ -29,6 +29,7 @@ class RecipeApp extends App
 	];
 
 	private const MAX_RECIPES = 32;
+	private const MAX_LIST_ENTRIES = 64; // ingredients, directions
 
 	public function __construct(
 		string $dbPath,
@@ -202,6 +203,7 @@ class RecipeApp extends App
 					'titleField' => self::titleField()->toJson(),
 					'courtesyOfField' => self::courtesyOfField()->toJson(),
 					'notesField' => self::notesField()->toJson(),
+					'maxListEntries' => self::MAX_LIST_ENTRIES
 				]
 			);
 			return null;
@@ -298,6 +300,10 @@ class RecipeApp extends App
 				return new JsonError(400, 'Bad course');
 			}
 
+			if (\count($recipe->ingredients->elems) > self::MAX_LIST_ENTRIES) {
+				return new JsonError(400, 'Too many ingredients');
+			}
+
 			$existingIngredients = [];
 			foreach ($existing['ingredients'] as $ing) {
 				$existingIngredients[$ing['id']] = true;
@@ -311,6 +317,10 @@ class RecipeApp extends App
 			foreach ($recipe->ingredients->elems as $ing) {
 				if (!$ing->isTemp && !\array_key_exists($ing->id, $existingIngredients))
 					return new JsonError(400, 'Bad saved ingredient id');
+			}
+
+			if (\count($recipe->directions->elems) > self::MAX_LIST_ENTRIES) {
+				return new JsonError(400, 'Too many directions');
 			}
 
 			$existingDirections = [];
