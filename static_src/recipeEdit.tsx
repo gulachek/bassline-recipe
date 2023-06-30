@@ -319,9 +319,7 @@ type EditAction =
 	| SetPropActions[EditableScalarProps];
 
 function normalizeLine(line: string): string {
-	if (line.match(/^\s+$/)) return '';
-
-	return line.replace(/\s+/, ' ');
+	return line.replace(/\s+/g, ' ').trim();
 }
 
 function reducer(state: IEditState, action: EditAction): IEditState {
@@ -553,6 +551,7 @@ interface IPageModel {
 	initialSaveKey: string;
 	titleField: IInputProps;
 	courtesyOfField: IInputProps;
+	notesField: IInputProps;
 }
 
 function Page(props: IPageModel) {
@@ -657,7 +656,7 @@ function Page(props: IPageModel) {
 
 					<hr />
 
-					<Notes notes={recipe.notes} />
+					<Notes notes={recipe.notes} notesField={props.notesField} />
 				</div>
 				<div className="footer">
 					<RecipeStatus
@@ -670,10 +669,6 @@ function Page(props: IPageModel) {
 			</RecipeDispatchContext.Provider>
 		</React.Fragment>
 	);
-}
-
-function normalizeString(str: string): string {
-	return str.replace(/\s+/g, ' ').trim();
 }
 
 interface IRecipePropertiesProps {
@@ -693,7 +688,7 @@ function RecipeProperties(props: IRecipePropertiesProps) {
 	}, []);
 
 	const onTitleLoseFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
-		e.target.value = normalizeString(e.target.value);
+		e.target.value = normalizeLine(e.target.value);
 		setTitle(e.target.value, e.target.reportValidity());
 	}, []);
 
@@ -704,7 +699,7 @@ function RecipeProperties(props: IRecipePropertiesProps) {
 
 	const onCourtesyOfLoseFocus = useCallback(
 		(e: FocusEvent<HTMLInputElement>) => {
-			e.target.value = normalizeString(e.target.value);
+			e.target.value = normalizeLine(e.target.value);
 			setCourtesyOf(e.target.value, e.target.reportValidity());
 		},
 		[]
@@ -817,17 +812,37 @@ function RecipeStatus(props: IRecipeStatusProps) {
 
 interface INotesProps {
 	notes: string | null;
+	notesField: IInputProps;
 }
 
 function Notes(props: INotesProps) {
+	const { notes, notesField } = props;
+
 	const setNotes = useSetProp('notes');
 	const onChangeNotes = useTextCallback((e) => {
-		setNotes(e.target.value);
+		setNotes(e.target.value, e.target.reportValidity());
+	}, []);
+
+	const onNotesLoseFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
+		e.target.value = normalizeLine(e.target.value);
+		setNotes(e.target.value, e.target.reportValidity());
+	}, []);
+
+	const onKeydown = useCallback((e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+		}
 	}, []);
 
 	return (
 		<Section title="Notes">
-			<textarea value={props.notes} onChange={onChangeNotes}></textarea>
+			<textarea
+				value={notes}
+				onChange={onChangeNotes}
+				onBlur={onNotesLoseFocus}
+				onKeyDown={onKeydown}
+				{...notesField}
+			></textarea>
 		</Section>
 	);
 }
