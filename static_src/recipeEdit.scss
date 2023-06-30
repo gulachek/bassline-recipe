@@ -76,6 +76,11 @@ textarea {
 
 		padding: 0.5em;
 
+		&.invalid {
+			color: var(--system-theme-error-text);
+			background-color: var(--system-theme-error);
+		}
+
 		&.selected {
 			//text-decoration: underline;
 			color: var(--system-theme-selected-item-text);

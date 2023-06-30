@@ -203,7 +203,9 @@ class RecipeApp extends App
 					'titleField' => self::titleField()->toJson(),
 					'courtesyOfField' => self::courtesyOfField()->toJson(),
 					'notesField' => self::notesField()->toJson(),
-					'maxListEntries' => self::MAX_LIST_ENTRIES
+					'ingredientField' => self::ingredientField()->toJson(),
+					'directionField' => self::directionField()->toJson(),
+					'maxListEntries' => self::MAX_LIST_ENTRIES,
 				]
 			);
 			return null;
@@ -315,6 +317,11 @@ class RecipeApp extends App
 			}
 
 			foreach ($recipe->ingredients->elems as $ing) {
+				if (!self::ingredientField()->isValid($ing->value))
+					return new JsonError(400, 'Bad ingredient format');
+
+				$ing->value = normalizeLine($ing->value);
+
 				if (!$ing->isTemp && !\array_key_exists($ing->id, $existingIngredients))
 					return new JsonError(400, 'Bad saved ingredient id');
 			}
@@ -334,6 +341,11 @@ class RecipeApp extends App
 			}
 
 			foreach ($recipe->directions->elems as $dir) {
+				if (!self::directionField()->isValid($dir->value))
+					return new JsonError(400, 'Bad direction format');
+
+				$dir->value = normalizeLine($dir->value);
+
 				if (!$dir->isTemp && !\array_key_exists($dir->id, $existingDirections))
 					return new JsonError(400, 'Bad saved direction id');
 			}
@@ -501,6 +513,26 @@ class RecipeApp extends App
 			required: false,
 			maxLength: 256,
 			title: "Additional notes"
+		);
+	}
+
+	private static function ingredientField(): InputField
+	{
+		return new InputField(
+			required: true,
+			maxLength: 64,
+			pattern: '.*\S+.*',
+			title: "Edit the selected ingredient."
+		);
+	}
+
+	private static function directionField(): InputField
+	{
+		return new InputField(
+			required: true,
+			maxLength: 128,
+			pattern: '.*\S+.*',
+			title: "Edit the selected direction."
 		);
 	}
 }

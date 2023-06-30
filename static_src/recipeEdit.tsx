@@ -140,20 +140,35 @@ type EditableScalarPropsGen<T> = {
 type EditableScalarProps = keyof EditableScalarPropsGen<IEditableRecipe>;
 
 type IValidity = {
-	[P in EditableScalarProps]: boolean;
+	[P in EditableScalarProps | EditableArrayProps]: P extends EditableScalarProps
+		? boolean
+		: boolean[];
 };
+
+type ValidityPropMap = { [key: string]: boolean | boolean[] };
 
 function isScalarProp(
 	key: string,
 	validity: IValidity
 ): key is EditableScalarProps {
-	return typeof (validity as any)[key] === 'boolean';
+	return typeof (validity as ValidityPropMap)[key] === 'boolean';
+}
+
+function isArrayProp(
+	key: string,
+	validity: IValidity
+): key is EditableArrayProps {
+	return Array.isArray((validity as ValidityPropMap)[key]);
 }
 
 function isValid(validity: IValidity): boolean {
 	for (const key in validity) {
 		if (isScalarProp(key, validity) && !validity[key]) {
 			return false;
+		} else if (isArrayProp(key, validity)) {
+			for (const elem of validity[key]) {
+				if (!elem) return false;
+			}
 		}
 	}
 
@@ -203,12 +218,13 @@ interface ISetElemValueAction {
 	type: 'setElemValue';
 	propKey: EditableArrayProps;
 	value: string;
+	isValid: boolean;
 }
 
 function useSetElemValue() {
 	const dispatch = useDispatch();
-	return (propKey: EditableArrayProps, value: string) => {
-		dispatch({ type: 'setElemValue', propKey, value });
+	return (propKey: EditableArrayProps, value: string, isValid: boolean) => {
+		dispatch({ type: 'setElemValue', propKey, value, isValid });
 	};
 }
 
@@ -339,7 +355,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		validity[action.propKey] = action.isValid;
 		doSetProp(recipe, action.propKey, action.value);
 	} else if (action.type === 'setElemValue') {
-		const { propKey, value } = action;
+		const { propKey, value, isValid } = action;
 		const array = recipe[propKey];
 		const { selectedIndex, deletedIds } = array;
 		const elems = [];
@@ -362,6 +378,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 			}
 		}
 
+		validity[propKey][selectedIndex] = isValid;
 		recipe[propKey] = { selectedIndex, deletedIds, elems };
 	} else if (action.type === 'addElem') {
 		const { propKey } = action;
@@ -371,8 +388,10 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 
 		for (let i = 0; i < array.elems.length; ++i) {
 			elems.push(array.elems[i]);
-			if (i === selectedIndex)
+			if (i === selectedIndex) {
 				elems.push({ id: --tempIdCounter, value: '', isTemp: true });
+				validity[propKey].splice(selectedIndex + 1, 0, false); // starts out empty/invalid
+			}
 		}
 
 		recipe[propKey] = {
@@ -391,6 +410,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 
 		if (elems.length > 1) {
 			elems.splice(selectedIndex, 1);
+			validity[propKey].splice(selectedIndex, 1);
 			deletedIds.push(elem.id);
 		} else {
 			elems[0].value = '';
@@ -552,6 +572,8 @@ interface IPageModel {
 	titleField: IInputProps;
 	courtesyOfField: IInputProps;
 	notesField: IInputProps;
+	ingredientField: IInputProps;
+	directionField: IInputProps;
 	maxListEntries: number;
 }
 
@@ -590,6 +612,8 @@ function Page(props: IPageModel) {
 			notes: true,
 			isVegan: true,
 			courtesyOf: true,
+			ingredients: props.recipe.ingredients.map(() => true),
+			directions: props.recipe.directions.map(() => true),
 		},
 	};
 
@@ -647,6 +671,8 @@ function Page(props: IPageModel) {
 						propKey="ingredients"
 						array={recipe.ingredients}
 						maxLength={props.maxListEntries}
+						field={props.ingredientField}
+						validity={validity.ingredients}
 					/>
 
 					<hr />
@@ -656,6 +682,8 @@ function Page(props: IPageModel) {
 						propKey="directions"
 						array={recipe.directions}
 						maxLength={props.maxListEntries}
+						field={props.directionField}
+						validity={validity.directions}
 					/>
 
 					<hr />
@@ -856,10 +884,12 @@ interface IEditArraySectionProps {
 	title: string;
 	propKey: EditableArrayProps;
 	maxLength: number; // max number of entries
+	field: IInputProps;
+	validity: boolean[];
 }
 
 function EditArraySection(props: IEditArraySectionProps) {
-	const { array, title, propKey, maxLength } = props;
+	const { array, title, propKey, maxLength, field, validity } = props;
 
 	const inputRef = useRef<HTMLTextAreaElement>();
 
@@ -867,10 +897,22 @@ function EditArraySection(props: IEditArraySectionProps) {
 	const selected = elems[selectedIndex];
 	const elemIsEmpty = selected.value === '';
 
+	useEffect(() => {
+		inputRef.current.reportValidity();
+	}, [selectedIndex]);
+
 	const setElemValue = useSetElemValue();
 	const onValueChange = useTextCallback(
 		(e) => {
-			setElemValue(propKey, e.target.value);
+			setElemValue(propKey, e.target.value, e.target.reportValidity());
+		},
+		[propKey]
+	);
+
+	const onLoseFocus = useCallback(
+		(e: FocusEvent<HTMLTextAreaElement>) => {
+			e.target.value = normalizeLine(e.target.value);
+			setElemValue(propKey, e.target.value, e.target.reportValidity());
 		},
 		[propKey]
 	);
@@ -946,6 +988,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 
 		let className = 'array-item';
 		if (i === selectedIndex) className += ' selected';
+		if (!validity[i]) className += ' invalid';
 
 		return (
 			<li
@@ -971,6 +1014,8 @@ function EditArraySection(props: IEditArraySectionProps) {
 					ref={inputRef}
 					value={selected.value}
 					onChange={onValueChange}
+					onBlur={onLoseFocus}
+					{...field}
 				/>
 				<br />
 				<button onClick={onClickAdd} disabled={elems.length >= maxLength}>
