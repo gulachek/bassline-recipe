@@ -11,6 +11,7 @@ import {
 	MouseEvent,
 	KeyboardEvent,
 	DragEvent,
+	FocusEvent,
 	DependencyList,
 } from 'react';
 
@@ -63,6 +64,13 @@ const RecipeDispatchContext = createContext(null);
 
 function useDispatch() {
 	return useContext(RecipeDispatchContext);
+}
+
+interface IInputProps {
+	required: boolean;
+	maxLength: number;
+	pattern?: string;
+	title?: string;
 }
 
 interface IElem {
@@ -121,9 +129,41 @@ type EditableArrayPropsGen<T> = {
 
 type EditableArrayProps = keyof EditableArrayPropsGen<IEditableRecipe>;
 
+type IsScalar<T, P extends keyof T> = T[P] extends string | number | boolean
+	? P
+	: never;
+
+type EditableScalarPropsGen<T> = {
+	[P in keyof T as IsScalar<T, Exclude<P, 'id' | 'isPublished'>>]: T[P];
+};
+
+type EditableScalarProps = keyof EditableScalarPropsGen<IEditableRecipe>;
+
+type IValidity = {
+	[P in EditableScalarProps]: boolean;
+};
+
+function isScalarProp(
+	key: string,
+	validity: IValidity
+): key is EditableScalarProps {
+	return typeof (validity as any)[key] === 'boolean';
+}
+
+function isValid(validity: IValidity): boolean {
+	for (const key in validity) {
+		if (isScalarProp(key, validity) && !validity[key]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 interface IEditState {
 	recipe: IEditableRecipe;
 	savedRecipe: IEditableRecipe;
+	validity: IValidity;
 	isSaving: boolean;
 	tempIdCounter: number;
 	showDeleteDialog: boolean;
@@ -131,10 +171,11 @@ interface IEditState {
 	fatalError: string | null;
 }
 
-interface ISetPropAction<PropKey extends keyof IEditableRecipe> {
+interface ISetPropAction<PropKey extends EditableScalarProps> {
 	type: 'setProp';
 	propKey: PropKey;
 	value: IEditableRecipe[PropKey];
+	isValid: boolean;
 }
 
 function doSetProp<PropKey extends keyof IEditableRecipe>(
@@ -145,15 +186,17 @@ function doSetProp<PropKey extends keyof IEditableRecipe>(
 	recipe[propKey] = value;
 }
 
-function useSetProp<PropKey extends keyof IEditableRecipe>(propKey: PropKey) {
+function useSetProp<PropKey extends EditableScalarProps>(propKey: PropKey) {
 	const dispatch = useDispatch();
-	return (value: IEditableRecipe[PropKey]) => {
-		dispatch({ type: 'setProp', propKey, value });
+	return (value: IEditableRecipe[PropKey], isValid?: boolean) => {
+		if (typeof isValid === 'undefined') isValid = true;
+
+		dispatch({ type: 'setProp', propKey, value, isValid });
 	};
 }
 
 type SetPropActions = {
-	[P in keyof IEditableRecipe]: ISetPropAction<P>;
+	[P in EditableScalarProps]: ISetPropAction<P>;
 };
 
 interface ISetElemValueAction {
@@ -273,7 +316,7 @@ type EditAction =
 	| IBeginSaveAction
 	| IEndSaveAction
 	| IShowDialogAction
-	| SetPropActions[keyof IEditableRecipe];
+	| SetPropActions[EditableScalarProps];
 
 function normalizeLine(line: string): string {
 	if (line.match(/^\s+$/)) return '';
@@ -291,9 +334,11 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		fatalError,
 	} = state;
 
+	const validity = structuredClone(state.validity);
 	const recipe = { ...state.recipe };
 
 	if (action.type === 'setProp') {
+		validity[action.propKey] = action.isValid;
 		doSetProp(recipe, action.propKey, action.value);
 	} else if (action.type === 'setElemValue') {
 		const { propKey, value } = action;
@@ -420,6 +465,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		recipe,
 		saveKey,
 		fatalError,
+		validity,
 	};
 }
 
@@ -505,6 +551,8 @@ interface IPageModel {
 	deleteUri: string;
 	publishUri: string;
 	initialSaveKey: string;
+	titleField: IInputProps;
+	courtesyOfField: IInputProps;
 }
 
 function Page(props: IPageModel) {
@@ -536,13 +584,20 @@ function Page(props: IPageModel) {
 		showDeleteDialog: false,
 		saveKey: props.initialSaveKey,
 		fatalError: null,
+		validity: {
+			title: true,
+			course: true,
+			notes: true,
+			isVegan: true,
+			courtesyOf: true,
+		},
 	};
 
 	const [state, dispatch] = useReducer(reducer, initialState);
 
 	const hasChange = pageHasChange(state);
 
-	const { recipe, saveKey, fatalError } = state;
+	const { recipe, saveKey, fatalError, validity } = state;
 
 	const onSave = useCallback(async () => {
 		dispatch({ type: 'beginSave' });
@@ -556,7 +611,7 @@ function Page(props: IPageModel) {
 		dispatch({ type: 'endSave', response, request });
 	}, [recipe, saveKey]);
 
-	const hasError = !!fatalError;
+	const hasError = !!fatalError || !isValid(validity);
 
 	return (
 		<React.Fragment>
@@ -579,7 +634,12 @@ function Page(props: IPageModel) {
 						recipeId={props.recipe.id}
 					/>
 					<hr />
-					<RecipeProperties recipe={recipe} courses={props.courses} />
+					<RecipeProperties
+						recipe={recipe}
+						courses={props.courses}
+						titleField={props.titleField}
+						courtesyOfField={props.courtesyOfField}
+					/>
 					<hr />
 					<EditArraySection
 						title="Ingredients"
@@ -612,24 +672,43 @@ function Page(props: IPageModel) {
 	);
 }
 
+function normalizeString(str: string): string {
+	return str.replace(/\s+/g, ' ').trim();
+}
+
 interface IRecipePropertiesProps {
 	recipe: IEditableRecipe;
 	courses: string[];
+	titleField: IInputProps;
+	courtesyOfField: IInputProps;
 }
 
 function RecipeProperties(props: IRecipePropertiesProps) {
 	const { title, isVegan, course, courtesyOf } = props.recipe;
-	const { courses } = props;
+	const { courses, titleField, courtesyOfField } = props;
 
 	const setTitle = useSetProp('title');
 	const onChangeTitle = useInputCallback((e) => {
-		setTitle(e.target.value);
+		setTitle(e.target.value, e.target.reportValidity());
+	}, []);
+
+	const onTitleLoseFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
+		e.target.value = normalizeString(e.target.value);
+		setTitle(e.target.value, e.target.reportValidity());
 	}, []);
 
 	const setCourtesyOf = useSetProp('courtesyOf');
 	const onChangeCourtesyOf = useInputCallback((e) => {
-		setCourtesyOf(e.target.value);
+		setCourtesyOf(e.target.value, e.target.reportValidity());
 	}, []);
+
+	const onCourtesyOfLoseFocus = useCallback(
+		(e: FocusEvent<HTMLInputElement>) => {
+			e.target.value = normalizeString(e.target.value);
+			setCourtesyOf(e.target.value, e.target.reportValidity());
+		},
+		[]
+	);
 
 	const setIsVegan = useSetProp('isVegan');
 	const onChangeIsVegan = useInputCallback((e) => {
@@ -663,6 +742,8 @@ function RecipeProperties(props: IRecipePropertiesProps) {
 					type="text"
 					value={title}
 					onChange={onChangeTitle}
+					onBlur={onTitleLoseFocus}
+					{...titleField}
 				/>
 				<label htmlFor={courseId}> Course: </label>
 				<select id={courseId} onChange={onChangeCourse} value={course}>
@@ -674,7 +755,8 @@ function RecipeProperties(props: IRecipePropertiesProps) {
 					id={courtesyOfId}
 					value={courtesyOf}
 					onChange={onChangeCourtesyOf}
-					title="Who gave you this recipe?"
+					onBlur={onCourtesyOfLoseFocus}
+					{...courtesyOfField}
 				/>
 				<label htmlFor={isVeganId}> Is Vegan: </label>
 				<input

@@ -10,6 +10,11 @@ use Gulachek\Bassline\Responder;
 use Gulachek\Bassline\ArrayProperty;
 use Gulachek\Bassline\SaveToken;
 
+function normalizeString(string $str): string
+{
+	return \preg_replace('/\s\s+/', ' ', \trim($str));
+}
+
 class RecipeApp extends App
 {
 	private RecipeDatabase $db;
@@ -155,6 +160,26 @@ class RecipeApp extends App
 		}
 	}
 
+	private static function titleField(): InputField
+	{
+		return new InputField(
+			required: true,
+			maxLength: 128,
+			pattern: '.*\S+.*',
+			title: "Enter the recipe's title. It must have at least one character."
+		);
+	}
+
+	private static function courtesyOfField(): InputField
+	{
+		return new InputField(
+			required: false,
+			maxLength: 64,
+			pattern: '.*\S+.*',
+			title: "Who gave you this recipe?"
+		);
+	}
+
 	public function edit(RespondArg $arg): mixed
 	{
 		$id = \intval($_REQUEST['id']);
@@ -193,7 +218,9 @@ class RecipeApp extends App
 					'viewUri' => "/{$this->baseUri}/view?id=$id",
 					'deleteUri' => "/{$this->baseUri}/delete",
 					'publishUri' => "/{$this->baseUri}/publish",
-					'initialSaveKey' => $token->key
+					'initialSaveKey' => $token->key,
+					'titleField' => self::titleField()->toJson(),
+					'courtesyOfField' => self::courtesyOfField()->toJson(),
 				]
 			);
 			return null;
@@ -270,6 +297,16 @@ class RecipeApp extends App
 
 			if (!$this->canEditRecipe($arg, $existing))
 				return new JsonError(401, 'Not authorized');
+
+			if (!self::titleField()->isValid($recipe->title)) {
+				return new JsonError(400, 'Bad title format');
+			}
+			$recipe->title = normalizeString($recipe->title);
+
+			if (!self::courtesyOfField()->isValid($recipe->courtesyOf)) {
+				return new JsonError(400, 'Bad "courtesy of" format');
+			}
+			$recipe->courtesyOf = normalizeString($recipe->courtesyOf);
 
 			if ($recipe->course < 1 || $recipe->course > count(self::COURSES)) {
 				return new JsonError(400, 'Bad course');
