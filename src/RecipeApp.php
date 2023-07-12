@@ -511,7 +511,7 @@ class RecipeApp extends App
 	{
 		return new InputField(
 			required: false,
-			maxLength: 256,
+			maxLength: 512,
 			title: "Additional notes"
 		);
 	}
@@ -520,7 +520,7 @@ class RecipeApp extends App
 	{
 		return new InputField(
 			required: true,
-			maxLength: 64,
+			maxLength: 128,
 			pattern: '.*\S+.*',
 			title: "Edit the selected ingredient."
 		);
@@ -530,7 +530,7 @@ class RecipeApp extends App
 	{
 		return new InputField(
 			required: true,
-			maxLength: 128,
+			maxLength: 256,
 			pattern: '.*\S+.*',
 			title: "Edit the selected direction."
 		);
