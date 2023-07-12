@@ -5,7 +5,7 @@ function resolve(p) {
 }
 
 module.exports = {
-	devtool: 'source-map',
+	devtool: 'eval-source-map',
 	entry: {
 		react: ['react', 'react-dom'],
 		recipeEdit: {

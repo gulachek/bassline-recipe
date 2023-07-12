@@ -390,7 +390,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 			elems.push(array.elems[i]);
 			if (i === selectedIndex) {
 				elems.push({ id: --tempIdCounter, value: '', isTemp: true });
-				validity[propKey].splice(selectedIndex + 1, 0, false); // starts out empty/invalid
+				validity[propKey].splice(selectedIndex + 1, 0, true); // starts out empty/valid
 			}
 		}
 

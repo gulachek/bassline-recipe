@@ -519,7 +519,7 @@ class RecipeApp extends App
 	private static function ingredientField(): InputField
 	{
 		return new InputField(
-			required: true,
+			required: false,
 			maxLength: 128,
 			pattern: '.*\S+.*',
 			title: "Edit the selected ingredient."
@@ -529,7 +529,7 @@ class RecipeApp extends App
 	private static function directionField(): InputField
 	{
 		return new InputField(
-			required: true,
+			required: false,
 			maxLength: 256,
 			pattern: '.*\S+.*',
 			title: "Edit the selected direction."
