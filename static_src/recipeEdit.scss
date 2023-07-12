@@ -49,7 +49,9 @@ h1 {
 }
 
 textarea,
-input {
+input,
+button,
+select {
 	font-size: 16px;
 }
 
@@ -57,9 +59,24 @@ textarea {
 	min-width: 95%;
 }
 
+.array-control-panel {
+	background: {
+		color: var(--system-theme-canvas);
+	}
+
+	border: thin var(--system-theme-canvas) solid;
+	padding: 0.5em;
+
+	&:focus-within {
+		position: sticky;
+		top: 0;
+		border-color: var(--system-theme-selected-item);
+	}
+}
+
 .array-edit-list {
 	list-style-type: none;
-	padding: 0;
+	padding: 0 0.5em;
 
 	display: inline-flex;
 	flex-flow: column;

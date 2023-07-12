@@ -1008,7 +1008,7 @@ function EditArraySection(props: IEditArraySectionProps) {
 
 	return (
 		<Section title={title}>
-			<div onKeyDown={onKeyDown}>
+			<div className="array-control-panel" onKeyDown={onKeyDown}>
 				<textarea
 					className="array-text-input"
 					ref={inputRef}
