@@ -67,9 +67,10 @@ textarea {
 	border: thin var(--system-theme-canvas) solid;
 	padding: 0.5em;
 
+	position: sticky;
+	top: 0;
+
 	&:focus-within {
-		position: sticky;
-		top: 0;
 		border-color: var(--system-theme-selected-item);
 	}
 }
