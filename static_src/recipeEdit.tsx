@@ -411,7 +411,7 @@ function reducer(state: IEditState, action: EditAction): IEditState {
 		if (elems.length > 1) {
 			elems.splice(selectedIndex, 1);
 			validity[propKey].splice(selectedIndex, 1);
-			deletedIds.push(elem.id);
+			if (!elem.isTemp) deletedIds.push(elem.id);
 		} else {
 			elems[0].value = '';
 		}
