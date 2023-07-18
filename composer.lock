@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "firebase/php-jwt",
-            "version": "v6.8.0",
+            "version": "v6.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "48b0210c51718d682e53210c24d25c5a10a2299b"
+                "reference": "5dbc8959427416b8ee09a100d7a8588c00fb2e26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/48b0210c51718d682e53210c24d25c5a10a2299b",
-                "reference": "48b0210c51718d682e53210c24d25c5a10a2299b",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/5dbc8959427416b8ee09a100d7a8588c00fb2e26",
+                "reference": "5dbc8959427416b8ee09a100d7a8588c00fb2e26",
                 "shasum": ""
             },
             "require": {
@@ -65,9 +65,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.8.0"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.8.1"
             },
-            "time": "2023-06-20T16:45:35+00:00"
+            "time": "2023-07-14T18:33:00+00:00"
         },
         {
             "name": "google/apiclient",
@@ -141,16 +141,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.306.0",
+            "version": "v0.309.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "eb778b9e1f7a9020d258f4dde7af776fc81ef8d9"
+                "reference": "562f8e5ddbca68d52afc3bf47d03839e78722026"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/eb778b9e1f7a9020d258f4dde7af776fc81ef8d9",
-                "reference": "eb778b9e1f7a9020d258f4dde7af776fc81ef8d9",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/562f8e5ddbca68d52afc3bf47d03839e78722026",
+                "reference": "562f8e5ddbca68d52afc3bf47d03839e78722026",
                 "shasum": ""
             },
             "require": {
@@ -179,9 +179,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.306.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.309.0"
             },
-            "time": "2023-06-26T00:52:13+00:00"
+            "time": "2023-07-16T01:08:14+00:00"
         },
         {
             "name": "google/auth",
@@ -247,12 +247,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/gulachek/bassline.git",
-                "reference": "76c462fd475ce150cfdd4c6046e4ba6e5ce959c8"
+                "reference": "0d8f1b47f2c475e91638b93491ae1d438b2b3de0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gulachek/bassline/zipball/76c462fd475ce150cfdd4c6046e4ba6e5ce959c8",
-                "reference": "76c462fd475ce150cfdd4c6046e4ba6e5ce959c8",
+                "url": "https://api.github.com/repos/gulachek/bassline/zipball/0d8f1b47f2c475e91638b93491ae1d438b2b3de0",
+                "reference": "0d8f1b47f2c475e91638b93491ae1d438b2b3de0",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "issues": "https://github.com/gulachek/bassline/issues",
                 "source": "https://github.com/gulachek/bassline/tree/master"
             },
-            "time": "2023-06-27T05:38:12+00:00"
+            "time": "2023-07-18T13:11:59+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -285,12 +285,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "fb7566caccf22d74d1ab270de3551f72a58399f5"
+                "reference": "cd634c213de11e0f229651173428f5c27d398628"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/fb7566caccf22d74d1ab270de3551f72a58399f5",
-                "reference": "fb7566caccf22d74d1ab270de3551f72a58399f5",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/cd634c213de11e0f229651173428f5c27d398628",
+                "reference": "cd634c213de11e0f229651173428f5c27d398628",
                 "shasum": ""
             },
             "require": {
@@ -388,7 +388,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.7.0"
+                "source": "https://github.com/guzzle/guzzle/tree/7.7"
             },
             "funding": [
                 {
@@ -404,7 +404,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-21T14:04:53+00:00"
+            "time": "2023-06-30T12:06:03+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -831,12 +831,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437"
+                "reference": "75c1d376718a27bea8e6ee42787d9868597baca2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437",
-                "reference": "bc8e0ed636fe8cfc949beff17ab7a4cdd2d5f437",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/75c1d376718a27bea8e6ee42787d9868597baca2",
+                "reference": "75c1d376718a27bea8e6ee42787d9868597baca2",
                 "shasum": ""
             },
             "require": {
@@ -933,7 +933,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-06-25T15:03:16+00:00"
+            "time": "2023-07-09T15:35:20+00:00"
         },
         {
             "name": "psr/cache",
