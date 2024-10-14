@@ -247,12 +247,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/gulachek/bassline.git",
-                "reference": "0d8f1b47f2c475e91638b93491ae1d438b2b3de0"
+                "reference": "e63ca11774bea151aa943e7762bb01c4d71e4d76"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gulachek/bassline/zipball/0d8f1b47f2c475e91638b93491ae1d438b2b3de0",
-                "reference": "0d8f1b47f2c475e91638b93491ae1d438b2b3de0",
+                "url": "https://api.github.com/repos/gulachek/bassline/zipball/e63ca11774bea151aa943e7762bb01c4d71e4d76",
+                "reference": "e63ca11774bea151aa943e7762bb01c4d71e4d76",
                 "shasum": ""
             },
             "require": {
@@ -277,7 +277,7 @@
                 "issues": "https://github.com/gulachek/bassline/issues",
                 "source": "https://github.com/gulachek/bassline/tree/master"
             },
-            "time": "2023-07-18T13:11:59+00:00"
+            "time": "2024-10-14T03:50:33+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1318,12 +1318,10 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "gulachek/bassline": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

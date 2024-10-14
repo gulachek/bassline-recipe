@@ -4,5 +4,5 @@ set path=,,buildlib,sql/**,src/**,static_src/**,test
 nnoremap <Leader>r :!test/reset.sh<CR>
 
 " build
-set makeprg=node\ make.js
-nnoremap <Leader>b :!node make.js<CR>
+set makeprg=node\ make.mjs
+nnoremap <Leader>b :!node make.mjs --outdir assets<CR>
